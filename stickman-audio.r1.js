@@ -263,6 +263,13 @@
     return b;
   }
 
+  // 合成音专用：未解锁时直接放弃，避免 resume 后一次性爆发
+  function sctx() {
+    var c = ensureCtx();
+    if (!c || c.state !== "running") return null;
+    return c;
+  }
+
   function route(ctx, g, x) {
     var out = g;
     if (ctx.createStereoPanner) {
@@ -276,7 +283,7 @@
 
   // 低频冲击 = 重量
   function thump(str, x) {
-    var ctx = ensureCtx(); if (!ctx) return;
+    var ctx = sctx(); if (!ctx) return;
     var t = ctx.currentTime + 0.001;
     var o = ctx.createOscillator();
     o.type = "sine";
@@ -293,7 +300,7 @@
 
   // 瞬态噪声 = 锐度
   function crack(str, x) {
-    var ctx = ensureCtx(); if (!ctx) return;
+    var ctx = sctx(); if (!ctx) return;
     var t = ctx.currentTime + 0.001;
     var s = ctx.createBufferSource(); s.buffer = noise(ctx);
     var hp = ctx.createBiquadFilter();
@@ -307,7 +314,7 @@
 
   // 中频实体 = 实在感
   function bodyHit(str, x) {
-    var ctx = ensureCtx(); if (!ctx) return;
+    var ctx = sctx(); if (!ctx) return;
     var t = ctx.currentTime + 0.001;
     var o = ctx.createOscillator();
     o.type = "triangle";
@@ -342,7 +349,7 @@
   }
 
   function comboChime(n, x) {
-    var ctx = ensureCtx(); if (!ctx) return;
+    var ctx = sctx(); if (!ctx) return;
     var t = ctx.currentTime + 0.001;
     var semi = Math.min((n - CFG.combo.from) * 2, 24);
     var o = ctx.createOscillator();
@@ -359,7 +366,7 @@
   }
 
   function deathTone(x) {
-    var ctx = ensureCtx(); if (!ctx) return;
+    var ctx = sctx(); if (!ctx) return;
     var t = ctx.currentTime + 0.02;
     var o = ctx.createOscillator();
     o.type = "sine";
@@ -375,7 +382,7 @@
 
   function landTone(power, x) {
     if (!A.on) return;
-    var ctx = ensureCtx(); if (!ctx) return;
+    var ctx = sctx(); if (!ctx) return;
     var t = ctx.currentTime + 0.001;
     var p = Math.max(0.25, Math.min(power, 1));
     var o = ctx.createOscillator();
@@ -401,7 +408,7 @@
 
   function whoosh(power, x) {
     if (!A.on) return;
-    var ctx = ensureCtx(); if (!ctx) return;
+    var ctx = sctx(); if (!ctx) return;
     var t = ctx.currentTime + 0.001;
     var s = ctx.createBufferSource(); s.buffer = noise(ctx);
     var bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 1.1;
