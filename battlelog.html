@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>战斗日志分析</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--fg:#1d2433;--mute:#6b7487;--line:#e3e6ee;--bar:#4f7cff;--weak:#e5484d;--strong:#e08a00;--ok:#2f9e6a}
+@media (prefers-color-scheme:dark){:root{--bg:#12151c;--card:#1b2029;--fg:#e8ecf3;--mute:#9aa3b5;--line:#2c3340;--bar:#6b93ff;--weak:#ff6b70;--strong:#ffb02e;--ok:#4cc38a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:22px;margin:0 0 4px}
+h2{font-size:16px;margin:28px 0 8px}
+.sub{color:var(--mute);font-size:13px}
+.bar-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0}
+select,button{font:inherit;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card b{display:block;font-size:22px}
+.card span{color:var(--mute);font-size:12px}
+.tbl{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:560px}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--mute);cursor:pointer;user-select:none;font-size:12px}
+tr:last-child td{border-bottom:0}
+.wr{display:inline-flex;align-items:center;gap:6px}
+.wr i{display:inline-block;height:7px;border-radius:4px;background:var(--bar)}
+.weak{color:var(--weak);font-weight:600}
+.strong{color:var(--strong);font-weight:600}
+.few{color:var(--mute)}
+.tag{font-size:11px;padding:1px 6px;border-radius:6px;margin-left:6px;border:1px solid currentColor}
+.note{color:var(--mute);font-size:12px;margin-top:6px}
+.evr td{text-align:left!important}.evr .wi{vertical-align:middle;margin-left:4px}.hl td{background:rgba(229,72,77,.12)}.btn2{cursor:pointer;border:1px solid currentColor;border-radius:6px;padding:1px 8px;font-size:12px;background:none;color:inherit}#detail{margin-top:10px}
+.wi{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}.wi img{width:32px;height:32px;object-fit:contain;flex:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>战斗日志分析</h1>
+  <div class="sub">双人模式每局自动记录：场地、被动、武器、伤害来源、胜负。<span id="st">加载中…</span></div>
+  <div class="bar-row">
+    时间 <select id="range"><option value="0">全部</option><option value="1">最近 1 天</option><option value="7">最近 7 天</option><option value="30">最近 30 天</option></select>
+    样本少于 <select id="minn"><option>5</option><option selected>10</option><option>20</option><option>50</option></select> 不标强弱
+    <button id="reload">刷新</button>
+  </div>
+  <div class="cards" id="cards"></div>
+
+  <h2>被动</h2>
+  <div class="tbl"><table id="tPassive"></table></div>
+  <div class="note">胜率低于 42% 标红 = 该加强；高于 58% 标橙 = 太强。造成伤害 = 对手受到的武器 + 大招 + 道具伤害。</div>
+
+  <h2>场地</h2>
+  <div class="tbl"><table id="tField"></table></div>
+  <div class="note">「场地伤害/局」高 = 场地存在感强；「胜者剩血」高 = 一边倒；场地本身对双方公平，主要看存在感和局长。</div>
+
+  <h2>武器</h2>
+  <div class="tbl"><table id="tWeapon"></table></div>
+  <div class="note">每分钟伤害 = 拿着这把武器时平均每分钟打出的伤害；主武器 = 本局拿得最久的那把。</div>
+
+  <h2>道具</h2>
+  <div class="tbl"><table id="tItem"></table></div>
+  <div class="note">只算自己捡到的。「捡到者胜率」= 捡到这个道具的人最后赢的比例；「白送」= 被动（诡术师/拾荒者/炼金师…）额外触发的次数。2026-11-18 以后的局才有这项。</div>
+
+  <h2>伤害来源</h2>
+  <div class="tbl"><table id="tSrc"></table></div>
+
+  <h2>1 秒爆发（哪个来源会瞬间秒人）</h2>
+  <div class="tbl"><table id="tBurst"></table></div>
+  <div class="note">同一来源 1 秒内打掉的血，按占最大生命的百分比算。最大值很高、平均值不高 = 偶尔会卡住连打。r18 以后的局才有这项。</div>
+
+  <h2>每一下伤害（排查 1P/2P 差距，r20 起）</h2>
+  <div class="cards" id="hitCards"></div>
+  <div class="tbl"><table id="tHit"></table></div>
+  <div class="note">每一行 = 游戏里一段会扣血的代码 + 打中人的那个物体。「攻击方」按打人的武器/子弹属于谁判断；看不出时按「挨打的对面」算并标 ?。「打到自己」= 自己的武器/子弹伤到自己。同一行 1P 和 2P 差很多 = 嫌疑最大。</div>
+
+  <h2>最近 20 局</h2>
+  <div class="tbl"><table id="tRecent"></table></div>
+  <div class="note">点「明细」看这一局每一下伤害和检查点（换武器、放大招、≥50 的重击）。</div>
+  <div id="detail"></div>
+</div>
+<script>
+var ALL=[], sortState={};
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function f1(x){return (Math.round(x*10)/10).toFixed(1);}
+function pct(a,b){return b?a/b*100:0;}
+function load(){
+  $("st").textContent=" 加载中…";
+  function __loadLogs(){
+  var local=[];
+  try{ local=JSON.parse(localStorage.getItem("stickman.battlelog.queue")||"[]")||[]; }catch(e){}
+  return fetch("assets/battlelog.data.json?t="+Date.now())
+    .then(function(r){ return r.ok?r.json():[]; })
+    .catch(function(){ return []; })
+    .then(function(hist){
+      var seen={}, all=[];
+      (Array.isArray(hist)?hist:[]).concat(Array.isArray(local)?local:[]).forEach(function(r){
+        if(!r||typeof r!=="object")return;
+        var k=[r.ts||0,r.field||"",r.winner===undefined?"":r.winner].join("|");
+        if(seen[k])return; seen[k]=1; all.push(r);
+      });
+      all.sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+      return all;
+    });
+}
+__loadLogs().then(function(d){ALL=d;render();})
+  .catch(function(e){$("st").textContent=" 读取失败："+e;});
+}
+var WNAME={lancespear:"长矛",sucette:"棒棒糖",sniper:"狙击枪",iceCream:"冰淇淋",flail:"流星锤",arbalete:"弩",katanna:"武士刀",scepter:"权杖",baton:"警棍",shield:"盾牌",scie:"电锯",lightsaber:"光剑",knife:"小刀",shuriken:"手里剑",gant:"拳套",spear:"长枪",pickaxe:"镐",bomb:"炸弹",arc:"弓",IronHand:"铁手",lamp:"灯",gun:"手枪",bananazooka:"香蕉炮",body:"空手",hammer:"锤子",blades:"双刃",grappin:"钩爪",guitare:"吉他",card:"卡牌",armCannon:"臂炮",faux:"镰刀",boot:"靴子",harp:"竖琴",axe:"斧头",potion:"药水",sword:"剑",AK:"AK",shotgun:"霰弹枪",thorHammer:"雷神锤",paintBrush:"画笔",magnet:"磁铁",Boomerang:"回旋镖"};
+function wbase(k){return String(k).replace(/2$/,"");}
+function wicon(k){var b=wbase(k),nm=WNAME[b]?WNAME[b]+" <span class='few'>"+esc(b)+"</span>":esc(b);
+  return "<span class='wi'><img src='assets/icons/weapons/"+encodeURIComponent(b)+".png' onerror=\"this.style.visibility='hidden'\" alt=''>"+nm+"</span>";}
+function srcGroup(k){ if(k.indexOf("武器:")===0)return "武器"; if(k.indexOf("场地:")===0)return "场地"; return k; }
+function dealtBy(r,i){ var t=r.p[1-i].taken||{}, s=0; for(var k in t){ var g=srcGroup(k); if(g!=="场地"&&g!=="地形")s+=t[k]; } return s; }
+function winRateCell(w,n,minn){
+  var p=pct(w,n), cls=n<minn?"few":(p<42?"weak":(p>58?"strong":""));
+  return "<span class='wr "+cls+"'><i style='width:"+Math.round(p*0.6)+"px'></i>"+f1(p)+"%</span>";
+}
+function table(id,cols,rows,defSort){
+  var st=sortState[id]||(sortState[id]={k:defSort,d:-1});
+  rows.sort(function(a,b){var x=a[st.k],y=b[st.k]; if(typeof x==="string")return st.d*(x<y?-1:x>y?1:0); return st.d*((x||0)-(y||0));});
+  var h="<tr>"+cols.map(function(c){return "<th data-k='"+c.k+"'>"+c.t+(st.k===c.k?(st.d<0?" ↓":" ↑"):"")+"</th>";}).join("")+"</tr>";
+  h+=rows.map(function(r){return "<tr>"+cols.map(function(c){return "<td>"+(c.f?c.f(r):esc(r[c.k]))+"</td>";}).join("")+"</tr>";}).join("");
+  if(!rows.length)h+="<tr><td colspan='"+cols.length+"' class='few'>还没有数据</td></tr>";
+  var el=$(id); el.innerHTML=h;
+  el.querySelectorAll("th").forEach(function(th){th.onclick=function(){var k=th.getAttribute("data-k"); if(st.k===k)st.d=-st.d; else {st.k=k;st.d=-1;} render();};});
+}
+function render(){
+  var days=+$("range").value, minn=+$("minn").value, now=Date.now();
+  var R=ALL.filter(function(r){return r&&r.p&&r.p.length===2&&(!days||now-(r.ts||r.st*1000)<days*86400000);});
+  $("st").textContent=" 共 "+R.length+" 局（总记录 "+ALL.length+"）";
+  // 概览
+  var dur=0,draw=0,kill={};
+  R.forEach(function(r){dur+=r.dur||0; if(r.winner===-1)draw++; r.p.forEach(function(p){if(p.killedBy){var g=srcGroup(p.killedBy);kill[g]=(kill[g]||0)+1;}});});
+  var topKill=Object.keys(kill).sort(function(a,b){return kill[b]-kill[a];})[0];
+  $("cards").innerHTML=[["局数",R.length],["平均每局",R.length?f1(dur/R.length)+" 秒":"-"],["平局",R.length?f1(pct(draw,R.length))+"%":"-"],["最常见死因",topKill?esc(topKill)+" "+f1(pct(kill[topKill],Object.keys(kill).reduce(function(s,k){return s+kill[k];},0)))+"%":"-"]]
+    .map(function(c){return "<div class='card'><span>"+c[0]+"</span><b>"+c[1]+"</b></div>";}).join("");
+  // 被动
+  var P={};
+  R.forEach(function(r){ r.p.forEach(function(p,i){
+    var k=p.passive||"无"; var o=P[k]||(P[k]={name:p.pname||k,n:0,w:0,dealt:0,taken:0,heal:0});
+    o.n++; if(r.winner===i)o.w++; o.dealt+=dealtBy(r,i);
+    var t=p.taken||{}; for(var x in t)o.taken+=t[x]; o.heal+=p.heal||0;
+  });});
+  table("tPassive",[
+    {k:"name",t:"被动"},{k:"n",t:"出场"},{k:"wr",t:"胜率",f:function(o){return winRateCell(o.w,o.n,minn);}},
+    {k:"ad",t:"造成伤害/局",f:function(o){return f1(o.ad);}},{k:"at",t:"承受伤害/局",f:function(o){return f1(o.at);}},{k:"ah",t:"回血/局",f:function(o){return f1(o.ah);}}
+  ],Object.keys(P).map(function(k){var o=P[k];o.wr=pct(o.w,o.n);o.ad=o.dealt/o.n;o.at=o.taken/o.n;o.ah=o.heal/o.n;return o;}),"wr");
+  // 场地
+  var F={};
+  R.forEach(function(r){
+    var k=r.field||"无场地"; var o=F[k]||(F[k]={name:r.fname||k,n:0,dur:0,fdmg:0,draw:0,fkill:0,winHp:0,wn:0});
+    o.n++; o.dur+=r.dur||0; if(r.winner===-1)o.draw++;
+    r.p.forEach(function(p){var t=p.taken||{}; for(var x in t)if(srcGroup(x)==="场地")o.fdmg+=t[x]; if(p.killedBy&&srcGroup(p.killedBy)==="场地")o.fkill++;});
+    if(r.winner>=0){o.winHp+=pct(r.p[r.winner].hpEnd||0,(r.maxhp&&r.maxhp[r.winner])||100);o.wn++;}
+  });
+  table("tField",[
+    {k:"name",t:"场地"},{k:"n",t:"局数"},{k:"ad",t:"平均时长",f:function(o){return f1(o.ad)+" 秒";}},
+    {k:"af",t:"场地伤害/局",f:function(o){return f1(o.af);}},{k:"fk",t:"场地致死",f:function(o){return o.fkill+"（"+f1(o.fk)+"%）";}},
+    {k:"aw",t:"胜者剩血",f:function(o){return o.wn?f1(o.aw)+"%":"-";}},{k:"dr",t:"平局",f:function(o){return f1(o.dr)+"%";}}
+  ],Object.keys(F).map(function(k){var o=F[k];o.ad=o.dur/o.n;o.af=o.fdmg/o.n;o.fk=pct(o.fkill,o.n);o.aw=o.wn?o.winHp/o.wn:0;o.dr=pct(o.draw,o.n);return o;}),"n");
+  // 武器
+  var W={};
+  function wo(k){k=wbase(k);return W[k]||(W[k]={name:k,sec:0,dmg:0,kill:0,mainN:0,mainW:0});}
+  R.forEach(function(r){ r.p.forEach(function(p,i){
+    var ws=p.weapons||{}, best=null,bs=0;
+    for(var k in ws){wo(k).sec+=ws[k]; if(ws[k]>bs){bs=ws[k];best=k;}}
+    if(best){wo(best).mainN++; if(r.winner===i)wo(best).mainW++;}
+    var t=r.p[1-i].taken||{}; for(var x in t)if(x.indexOf("武器:")===0)wo(x.slice(3)).dmg+=t[x];
+    var kb=r.p[1-i].killedBy; if(kb&&kb.indexOf("武器:")===0)wo(kb.slice(3)).kill++;
+  });});
+  table("tWeapon",[
+    {k:"name",t:"武器",f:function(o){return wicon(o.name);}},{k:"sec",t:"持有时间",f:function(o){return f1(o.sec/60)+" 分";}},{k:"dmg",t:"总伤害",f:function(o){return f1(o.dmg);}},
+    {k:"dpm",t:"每分钟伤害",f:function(o){return o.sec>=30?f1(o.dpm):"<span class='few'>"+f1(o.dpm)+"</span>";}},{k:"kill",t:"致命一击"},
+    {k:"mw",t:"主武器胜率",f:function(o){return o.mainN?winRateCell(o.mainW,o.mainN,minn)+" <span class='few'>("+o.mainN+")</span>":"-";}}
+  ],Object.keys(W).map(function(k){var o=W[k];o.dpm=o.sec?o.dmg/o.sec*60:0;o.mw=o.mainN?pct(o.mainW,o.mainN):-1;return o;}),"dpm");
+  // 道具
+  var IT={};
+  function io(k){return IT[k]||(IT[k]={name:k,n:0,games:0,w:0,first:0,firstN:0,gift:0});}
+  R.forEach(function(r){ r.p.forEach(function(p,i){
+    var seen={};
+    (p.items||[]).forEach(function(it){var o=io(it.n||String(it.s)); o.n++; o.first+=it.t||0; o.firstN++; if(!seen[o.name]){seen[o.name]=1;o.games++; if(r.winner===i)o.w++;}});
+    var g=p.gifts||{}; for(var k in g)io(k).gift+=g[k];
+  });});
+  table("tItem",[
+    {k:"name",t:"道具"},{k:"n",t:"捡到次数"},{k:"wr",t:"捡到者胜率",f:function(o){return o.games?winRateCell(o.w,o.games,minn)+" <span class='few'>("+o.games+" 局)</span>":"-";}},
+    {k:"at",t:"平均第几秒捡",f:function(o){return o.firstN?f1(o.at)+" 秒":"-";}},{k:"gift",t:"白送"}
+  ],Object.keys(IT).map(function(k){var o=IT[k];o.wr=o.games?pct(o.w,o.games):-1;o.at=o.firstN?o.first/o.firstN:0;return o;}),"n");
+  // 伤害来源
+  var S={},tot=0;
+  R.forEach(function(r){r.p.forEach(function(p){var t=p.taken||{};for(var x in t){var g=srcGroup(x);S[g]=(S[g]||0)+t[x];tot+=t[x];}});});
+  table("tSrc",[{k:"name",t:"来源"},{k:"v",t:"总伤害",f:function(o){return f1(o.v);}},{k:"p",t:"占比",f:function(o){return "<span class='wr'><i style='width:"+Math.round(o.p)+"px'></i>"+f1(o.p)+"%</span>";}},{k:"k",t:"致死次数"}],
+    Object.keys(S).map(function(k){return {name:k,v:S[k],p:pct(S[k],tot),k:kill[k]||0};}),"v");
+  // 1 秒爆发
+  var BU={};
+  R.forEach(function(r){var mh=r.maxhp||[100,100];r.p.forEach(function(p,i){var b=p.burst1s||{};for(var x in b){var v=b[x]/(mh[i]||100)*100;var o=BU[x]||(BU[x]={name:x,n:0,sum:0,max:0,over50:0});o.n++;o.sum+=v;if(v>o.max)o.max=v;if(v>=50)o.over50++;}});});
+  table("tBurst",[{k:"name",t:"来源",f:function(o){return o.name.indexOf("武器:")===0?wicon(o.name.slice(3)):esc(o.name);}},{k:"n",t:"局数"},{k:"avg",t:"平均最大爆发",f:function(o){return f1(o.avg)+"%";}},{k:"max",t:"最高",f:function(o){return (o.max>=50?"<b style='color:#e5484d'>":"<b>")+f1(o.max)+"%</b>";}},{k:"over50",t:"≥50% 次数"}],
+    Object.keys(BU).map(function(k){var o=BU[k];o.avg=o.sum/o.n;return o;}),"max");
+  // 每一下伤害
+  var HT={}, hitRounds=0, side=[{n:0,d:0,big:0},{n:0,d:0,big:0}], selfN=0;
+  R.forEach(function(r){ if(!r.hits)return; hitRounds++; var D=r.dict||[];
+    r.hits.forEach(function(h){
+      var v=h[1], real=h[3], own=h[5], guess=own<0, atk=guess?1-v:own, self=!guess&&own===v;
+      var src=D[h[4]]||"?", nd=String(D[h[6]]||"").replace(/2$/,""), key=src+(nd?" · "+nd:"");
+      var o=HT[key]||(HT[key]={name:key,src:src,nd:nd,a:[{n:0,d:0,big:0},{n:0,d:0,big:0}],self:0,guess:0});
+      if(self){o.self++;selfN++;}
+      else { var x=o.a[atk]; x.n++; x.d+=real; if(real>=50)x.big++; var y=side[atk]; y.n++; y.d+=real; if(real>=50)y.big++; }
+      if(guess)o.guess++;
+    });
+  });
+  $("hitCards").innerHTML=[["有明细的局",hitRounds],["1P 打出",hitRounds?Math.round(side[0].d)+"（"+side[0].n+" 下，重击 "+side[0].big+"）":"-"],["2P 打出",hitRounds?Math.round(side[1].d)+"（"+side[1].n+" 下，重击 "+side[1].big+"）":"-"],["打到自己",selfN]]
+    .map(function(c){return "<div class='card'><span>"+c[0]+"</span><b style='font-size:16px'>"+c[1]+"</b></div>";}).join("");
+  function sc(x){return x.n?Math.round(x.d)+" <span class='few'>("+x.n+" 下"+(x.big?"，重击 "+x.big:"")+")</span>":"-";}
+  table("tHit",[
+    {k:"name",t:"来源 · 打中人的物体",f:function(o){return (WNAME[o.nd]?wicon(o.nd)+" ":"")+"<span class='few'>"+esc(o.src)+(o.guess?" ?":"")+"</span>";}},
+    {k:"d0",t:"1P 打出",f:function(o){return sc(o.a[0]);}},{k:"d1",t:"2P 打出",f:function(o){return sc(o.a[1]);}},
+    {k:"gap",t:"差距",f:function(o){var g=o.d0-o.d1;return g?(g>0?"1P +":"2P +")+Math.round(Math.abs(g)):"0";}},
+    {k:"self",t:"打到自己",f:function(o){return o.self?"<b style='color:#e5484d'>"+o.self+"</b>":"0";}}
+  ],Object.keys(HT).map(function(k){var o=HT[k];o.d0=o.a[0].d;o.d1=o.a[1].d;o.gap=Math.abs(o.d0-o.d1);return o;}),"gap");
+  // 最近
+  var R20=R.slice(-20).reverse(); window.__R20=R20;
+  var rec=R20.map(function(r,i){return {i:i,
+    t:new Date(r.ts||r.st*1000).toLocaleString("zh-CN",{hour12:false}),field:r.fname||r.field||"-",dur:r.dur,
+    a:(r.p[0].pname||r.p[0].passive)+(r.winner===0?" 🏆":""),b:(r.p[1].pname||r.p[1].passive)+(r.winner===1?" 🏆":""),
+    hp:f1(r.p[0].hpEnd)+" / "+f1(r.p[1].hpEnd),kb:(r.p[0].killedBy||r.p[1].killedBy||"-")};});
+  sortState.tRecent=sortState.tRecent||{k:"i",d:1};
+  table("tRecent",[{k:"t",t:"时间"},{k:"field",t:"场地"},{k:"dur",t:"时长(秒)"},{k:"a",t:"P1 被动"},{k:"b",t:"P2 被动"},{k:"hp",t:"剩血"},{k:"kb",t:"死因"},{k:"i",t:"明细",f:function(o){return R20[o.i].hits?"<button class='btn2' onclick='showDetail("+o.i+")'>明细</button>":"-";}}],rec,"i");
+}
+function showDetail(i){
+  var r=window.__R20[i], D=r.dict||[], el=$("detail"); if(!r||!r.hits){el.innerHTML="";return;}
+  var rows=r.hits.map(function(h){return {t:h[0],k:"hit",h:h};}).concat((r.ev||[]).filter(function(e){return e[0]!=="big";}).map(function(e){return {t:e[1],k:e[0],e:e};}));
+  rows.sort(function(a,b){return a.t-b.t;});
+  var P=["1P","2P"];
+  var html="<h2 style='margin-top:6px'>明细："+esc(r.fname||r.field||"-")+" · "+f1(r.dur)+" 秒 · "+(r.winner>=0?P[r.winner]+" 赢":"平局")+" <button class='btn2' onclick=\"$('detail').innerHTML=''\">收起</button></h2>";
+  html+="<div class='tbl'><table><tr><th>秒</th><th>谁挨打</th><th>掉血</th><th>攻击方</th><th>来源</th><th>打中人的物体</th><th>对手当时的武器</th><th>剩血</th></tr>";
+  rows.forEach(function(x){
+    if(x.k==="w"){html+="<tr class='evr'><td>"+f1(x.t)+"</td><td colspan='7' class='few'>"+P[x.e[2]]+" 换武器 → "+wicon(x.e[3])+"</td></tr>";return;}
+    if(x.k==="skill"){html+="<tr class='evr'><td>"+f1(x.t)+"</td><td colspan='7' class='few'>"+P[x.e[2]]+" 放大招</td></tr>";return;}
+    var h=x.h, own=h[5], self=own>=0&&own===h[1], big=h[3]>=50;
+    html+="<tr"+(self||big?" class='hl'":"")+"><td>"+f1(h[0])+"</td><td>"+P[h[1]]+"</td><td>"+(big?"<b>"+f1(h[3])+"</b>":f1(h[3]))+(h[2]!==h[3]?" <span class='few'>(原 "+f1(h[2])+")</span>":"")+"</td><td>"+(own<0?"? ":"")+(self?"<b style='color:#e5484d'>自己</b>":P[own<0?1-h[1]:own])+(h[10]?" <span class='few'>大招中</span>":"")+"</td><td class='few'>"+esc(D[h[4]]||"")+"</td><td>"+esc(D[h[6]]||"")+" <span class='few'>"+esc(D[h[7]]||"")+"</span></td><td>"+wicon(D[h[8]]||"")+"</td><td>"+f1(h[9])+"</td></tr>";
+  });
+  if(r.hitOver)html+="<tr><td colspan='8' class='few'>还有 "+r.hitOver+" 下没记（每局最多记 400 下）</td></tr>";
+  el.innerHTML=html+"</table></div>"; el.scrollIntoView({behavior:"smooth"});
+}
+$("range").onchange=render; $("minn").onchange=render; $("reload").onclick=load;
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,548 @@
+{
+  "_comment": "修改这个文件可以直接编辑游戏中所有被动和道具的中文名+描述。修改后刷新游戏立即生效。",
+  "passives": [
+    {
+      "id": "doubleJump",
+      "name": "踏云",
+      "desc": "空中可以一直跳；在空中出手更疼"
+    },
+    {
+      "id": "spikeImmune",
+      "name": "金钟罩",
+      "desc": "不怕地形伤害，减速、沉默这类控制对你没用"
+    },
+    {
+      "id": "lifesteal",
+      "name": "饮血",
+      "desc": "打中人就回血"
+    },
+    {
+      "id": "quickUlt",
+      "name": "疾风",
+      "desc": "大招转好得更快"
+    },
+    {
+      "id": "thorns",
+      "name": "荆棘甲",
+      "desc": "打你的人自己也会疼"
+    },
+    {
+      "id": "reviveOnce",
+      "name": "涅槃",
+      "desc": "每回合第一次倒下会带点血站起来"
+    },
+    {
+      "id": "berserker",
+      "name": "狂血",
+      "desc": "血越少，打人越疼"
+    },
+    {
+      "id": "shieldRegen",
+      "name": "回春",
+      "desc": "一直在慢慢回血"
+    },
+    {
+      "id": "weaponMaster",
+      "name": "兵器谱",
+      "desc": "手里的武器会定时换新"
+    },
+    {
+      "id": "mirrorImage",
+      "name": "影分身",
+      "desc": "放大招时常常带出一个替身"
+    },
+    {
+      "id": "evasion",
+      "name": "凌波",
+      "desc": "有时能直接躲开攻击"
+    },
+    {
+      "id": "kamikaze",
+      "name": "同归",
+      "desc": "快死时拉对手一起炸"
+    },
+    {
+      "id": "counterStrike",
+      "name": "反击",
+      "desc": "挨打之后，下一下打回去特别疼"
+    },
+    {
+      "id": "firstStrike",
+      "name": "先发制人",
+      "desc": "开局一小段时间伤害很高，要抢先手"
+    },
+    {
+      "id": "rage",
+      "name": "怒火",
+      "desc": "打人越多，下一招越猛"
+    },
+    {
+      "id": "cursed",
+      "name": "血契",
+      "desc": "一直在掉血，换来很高的伤害"
+    },
+    {
+      "id": "bigBoy",
+      "name": "泰坦",
+      "desc": "块头大、更耐打、打人更疼，但也更容易被打中"
+    },
+    {
+      "id": "tinyBoy",
+      "name": "侏儒",
+      "desc": "个子小、跑得快、大招充得快，偶尔能躲开攻击"
+    },
+    {
+      "id": "silly",
+      "name": "醉拳",
+      "desc": "彩蛋：偶尔会醉到极点，这一回合乱抽道具、时不时打出暴击"
+    },
+    {
+      "id": "mage",
+      "name": "法师",
+      "desc": "大招几乎能一直放，但每一下都不太疼"
+    },
+    {
+      "id": "gambler",
+      "name": "赌神",
+      "desc": "每一下打多疼全看运气，偶尔直接斩杀"
+    },
+    {
+      "id": "alchemist",
+      "name": "炼金",
+      "desc": "吃道具时常常多送一个随机效果"
+    },
+    {
+      "id": "foodie",
+      "name": "饕餮",
+      "desc": "吃道具还能回血"
+    },
+    {
+      "id": "pyromancer",
+      "name": "焚天",
+      "desc": "打中让对手着火，持续掉血"
+    },
+    {
+      "id": "frostlord",
+      "name": "冰封",
+      "desc": "打中让对手变慢，连续打还能把他冻住"
+    },
+    {
+      "id": "bulwark",
+      "name": "不动明王",
+      "desc": "站着不动会长出护盾，一动就没了"
+    },
+    {
+      "id": "echo",
+      "name": "卸力",
+      "desc": "受到的伤害慢慢结算，这期间回的血能抵掉"
+    },
+    {
+      "id": "gravitywell",
+      "name": "黑洞",
+      "desc": "放大招时把对手吸过来"
+    },
+    {
+      "id": "compound",
+      "name": "战意",
+      "desc": "活得越久，跑得越快、打得越疼"
+    },
+    {
+      "id": "disarmer",
+      "name": "夺械",
+      "desc": "打中时有机会打掉对手的武器"
+    },
+    {
+      "id": "parasite",
+      "name": "寄生",
+      "desc": "对手吃道具时，你常常也能蹭到一份"
+    },
+    {
+      "id": "ironHead",
+      "name": "铁头功",
+      "desc": "特别扛大招，普通攻击也少疼一点"
+    },
+    {
+      "id": "scavenger",
+      "name": "拾荒者",
+      "desc": "吃到的道具常常会再来一次"
+    },
+    {
+      "id": "itemFlow",
+      "name": "天眷",
+      "desc": "时不时自动得到一个道具效果"
+    },
+    {
+      "id": "forbiddenContract",
+      "name": "封印师",
+      "desc": "血很少，但只要你活着，对手就放不出大招"
+    },
+    {
+      "id": "oneShot",
+      "name": "一击必杀",
+      "desc": "很脆，但每一下都能打掉对手一大块血，几下就能结束战斗"
+    },
+    {
+      "id": "assassin",
+      "name": "影刺",
+      "desc": "血很少，但隔一会儿的第一下特别疼，打完就跑"
+    },
+    {
+      "id": "ironwall",
+      "name": "铁壁",
+      "desc": "再重的一下也只掉一点点血，不怕被秒"
+    },
+    {
+      "id": "hunter",
+      "name": "猎杀",
+      "desc": "对手残血时你打得特别狠"
+    },
+    {
+      "id": "conjurer",
+      "name": "瞬身",
+      "desc": "挨打时有时会闪到对手背后"
+    },
+    {
+      "id": "stomp",
+      "name": "天坠",
+      "desc": "从高处落下会砸地，把身边的对手震飞"
+    },
+    {
+      "id": "sniper",
+      "name": "神射",
+      "desc": "离对手越远打得越疼"
+    },
+    {
+      "id": "brawler",
+      "name": "寸劲",
+      "desc": "贴着对手打时很耐打"
+    },
+    {
+      "id": "combo",
+      "name": "连斩",
+      "desc": "连续打中越打越疼，停手就清零"
+    },
+    {
+      "id": "spark",
+      "name": "雷印",
+      "desc": "打中会给对手留雷印，叠满就爆炸"
+    },
+    {
+      "id": "tesla",
+      "name": "雷域",
+      "desc": "隔一会儿放一圈电，把靠近的对手电开"
+    },
+    {
+      "id": "absorber",
+      "name": "蓄能",
+      "desc": "挨打会给自己的大招充能"
+    },
+    {
+      "id": "rewind",
+      "name": "回溯",
+      "desc": "每回合一次，快死时把血倒回到几秒前"
+    }
+  ],
+  "items": [
+    {
+      "state": 0,
+      "emoji": "",
+      "name": "金创药",
+      "short": "回血",
+      "detail": "马上回一大口血"
+    },
+    {
+      "state": 1,
+      "emoji": "",
+      "name": "格挡",
+      "short": "免伤一次",
+      "detail": "下一次挨打完全不疼"
+    },
+    {
+      "state": 2,
+      "emoji": "",
+      "name": "霸王丹",
+      "short": "伤害暴涨",
+      "detail": "接下来一小会儿打人非常疼"
+    },
+    {
+      "state": 3,
+      "emoji": "",
+      "name": "奥义连发",
+      "short": "大招不冷却",
+      "detail": "很短的时间里大招可以连着放"
+    },
+    {
+      "state": 4,
+      "emoji": "",
+      "name": "换兵",
+      "short": "换武器",
+      "detail": "马上换一把随机武器"
+    },
+    {
+      "state": 5,
+      "emoji": "",
+      "name": "召唤援兵",
+      "short": "召唤小弟",
+      "detail": "叫来一个小弟帮你打"
+    },
+    {
+      "state": 7,
+      "emoji": "",
+      "name": "羽翼",
+      "short": "飞行",
+      "detail": "一小会儿不受重力，可以到处飞"
+    },
+    {
+      "state": 8,
+      "emoji": "",
+      "name": "护身符",
+      "short": "濒死复活",
+      "detail": "快死时自动救你一命，还会短暂无敌"
+    },
+    {
+      "state": 9,
+      "emoji": "",
+      "name": "天机匣",
+      "short": "随机效果",
+      "detail": "随机得到一个道具效果"
+    },
+    {
+      "state": 10,
+      "emoji": "",
+      "name": "巨化",
+      "short": "变大",
+      "detail": "变大，更耐打也更疼"
+    },
+    {
+      "state": 11,
+      "emoji": "",
+      "name": "缩骨",
+      "short": "变小",
+      "detail": "变小，跑得快、大招转得快"
+    },
+    {
+      "state": 13,
+      "emoji": "",
+      "name": "时停",
+      "short": "时停",
+      "detail": "除了你，全场都停住"
+    },
+    {
+      "state": 21,
+      "emoji": "",
+      "name": "飞爪",
+      "short": "拉过来",
+      "detail": "一下把对手钩到面前"
+    },
+    {
+      "state": 33,
+      "emoji": "",
+      "name": "换血",
+      "short": "交换血量",
+      "detail": "和对手互换血量，残血时能翻盘"
+    },
+    {
+      "state": 37,
+      "emoji": "",
+      "name": "顺手牵羊",
+      "short": "抢武器",
+      "detail": "抢走对手的武器，他要空手一会儿"
+    },
+    {
+      "state": 38,
+      "emoji": "",
+      "name": "反射结界",
+      "short": "反伤",
+      "detail": "一小会儿内挨的打全部弹回去"
+    },
+    {
+      "state": 51,
+      "emoji": "",
+      "name": "定时炸弹",
+      "short": "炸弹",
+      "detail": "在脚下放一颗炸弹，过一会儿炸开"
+    },
+    {
+      "state": 52,
+      "emoji": "",
+      "name": "断兵",
+      "short": "缴械",
+      "detail": "砸掉对手的武器，他要空手一会儿"
+    },
+    {
+      "state": 64,
+      "emoji": "",
+      "name": "血牙",
+      "short": "打中回血",
+      "detail": "下一次打中回一大口血，这一下也更疼"
+    },
+    {
+      "state": 70,
+      "emoji": "",
+      "name": "冰冻术",
+      "short": "减速",
+      "detail": "对手一阵子变得很慢"
+    },
+    {
+      "state": 73,
+      "emoji": "",
+      "name": "千斤坠",
+      "short": "变重",
+      "detail": "对手变得很重，跳不起来"
+    },
+    {
+      "state": 74,
+      "emoji": "",
+      "name": "禁言",
+      "short": "封大招",
+      "detail": "对手一阵子放不了大招"
+    },
+    {
+      "state": 80,
+      "emoji": "",
+      "name": "无敌金身",
+      "short": "无敌",
+      "detail": "一小会儿完全无敌"
+    },
+    {
+      "state": 85,
+      "emoji": "",
+      "name": "轻身",
+      "short": "轻盈",
+      "detail": "一阵子跳得更高，挨打也没那么疼"
+    },
+    {
+      "state": 100,
+      "emoji": "",
+      "name": "易容",
+      "short": "伪装",
+      "detail": "变成和对手一样的样子"
+    },
+    {
+      "state": 101,
+      "emoji": "",
+      "name": "夺命",
+      "short": "偷血",
+      "detail": "从对手身上偷一块血"
+    },
+    {
+      "state": 103,
+      "emoji": "",
+      "name": "孤注一掷",
+      "short": "赌命",
+      "detail": "血量要么翻倍，要么减半"
+    },
+    {
+      "state": 125,
+      "emoji": "",
+      "name": "移魂",
+      "short": "换被动",
+      "detail": "你的被动随机换成另一个"
+    },
+    {
+      "state": 130,
+      "emoji": "",
+      "name": "陨石雨",
+      "short": "流星雨",
+      "detail": "一串陨石从天上砸下来"
+    },
+    {
+      "state": 131,
+      "emoji": "",
+      "name": "激光炮",
+      "short": "激光",
+      "detail": "射出一道激光，打得很疼"
+    },
+    {
+      "state": 160,
+      "emoji": "",
+      "name": "排山掌",
+      "short": "拍飞",
+      "detail": "一巴掌把对手拍上天"
+    },
+    {
+      "state": 30,
+      "emoji": "",
+      "name": "瞬移背刺",
+      "short": "闪到背后",
+      "detail": "瞬间闪到对手背后"
+    },
+    {
+      "state": 110,
+      "emoji": "",
+      "name": "乱神",
+      "short": "反向操作",
+      "detail": "对手一阵子左右方向反了"
+    },
+    {
+      "state": 200,
+      "emoji": "💥",
+      "name": "三重奥义",
+      "short": "连放大招",
+      "detail": "马上连着放好几次大招"
+    },
+    {
+      "state": 150,
+      "emoji": "🔄",
+      "name": "移形换位",
+      "short": "位置互换",
+      "detail": "和对手瞬间换位置"
+    },
+    {
+      "state": 201,
+      "emoji": "",
+      "name": "回城",
+      "short": "回到原地",
+      "detail": "过一会儿传回吃道具的地方，适合跑路"
+    },
+    {
+      "state": 203,
+      "emoji": "",
+      "name": "止战结界",
+      "short": "圈里不能出手",
+      "detail": "在圈里谁都不能发起攻击"
+    },
+    {
+      "state": 218,
+      "emoji": "🧨",
+      "name": "连环雷",
+      "short": "连炸",
+      "detail": "在对手身上连着炸好几下"
+    },
+    {
+      "state": 219,
+      "emoji": "💨",
+      "name": "冲撞",
+      "short": "撞飞",
+      "detail": "朝对手猛冲，撞到就把他撞飞"
+    },
+    {
+      "state": 220,
+      "emoji": "🔗",
+      "name": "共生",
+      "short": "分担伤害",
+      "detail": "一阵子你挨的打有一半算到对手头上"
+    },
+    {
+      "state": 221,
+      "emoji": "🥊",
+      "name": "蓄力拳",
+      "short": "重拳",
+      "detail": "接下来几下打得特别重"
+    },
+    {
+      "state": 222,
+      "emoji": "🌪️",
+      "name": "旋风",
+      "short": "吹飞",
+      "detail": "一阵旋风把对手卷上天再甩出去"
+    },
+    {
+      "state": 223,
+      "emoji": "🔋",
+      "name": "能量涌动",
+      "short": "大招充满",
+      "detail": "大招马上充满"
+    }
+  ]
+}
