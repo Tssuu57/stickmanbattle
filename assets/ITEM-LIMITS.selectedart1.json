@@ -1,0 +1,90 @@
+{
+  "version": "selectedart1",
+  "sourceBaseline": "actionlimits1",
+  "pickupDeduplication": {
+    "sameSpawn": true,
+    "mechanism": "BuffItem.__pickupConsumed",
+    "note": "同一实体的身体碰撞次数不决定效果次数"
+  },
+  "randomBox": {
+    "added": false,
+    "reason": "与旧命运魔方同为随机抽效果；本版不新增 state",
+    "legacyState9EnabledInFieldPool": false
+  },
+  "rules": [
+    {
+      "state": 5,
+      "name": "分身傀儡",
+      "rollsPerPickup": 1,
+      "result": "均匀随机整数 2–15 只",
+      "scheduling": "每只间隔 80ms；回合或场景变化后剩余回调失效"
+    },
+    {
+      "state": 10,
+      "name": "巨人药剂",
+      "rollsPerPickup": 1,
+      "result": "k 为均匀随机整数 1–5；目标体型=正常基准×k",
+      "durationMs": 10000,
+      "refresh": "重复拾取更换目标档位并刷新10秒，不指数叠加",
+      "singleLayer": "生命上限×1.5及回满仅本回合首次巨人药剂应用；攻击增益保持原有单层调用，不随k倍增"
+    },
+    {
+      "state": 11,
+      "name": "微型药剂",
+      "rollsPerPickup": 1,
+      "result": "k 为均匀随机整数 1–5；目标体型=正常基准÷k",
+      "durationMs": 10000,
+      "refresh": "重复拾取更换目标档位并刷新10秒，不指数叠加",
+      "mutualExclusion": "与巨人药剂共用同一目标体型档位，后取得者覆盖前者"
+    },
+    {
+      "state": 51,
+      "name": "延时爆弹",
+      "rollsPerPickup": 1,
+      "formulaMax": "max(1, round(0.8 × target.maxhp / 25))",
+      "actualMax": "min(formulaMax, 24)",
+      "result": "均匀随机整数 1–actualMax 颗",
+      "baseDamageEach": 25,
+      "delayMsEach": 2000,
+      "spawnIntervalMs": 120
+    },
+    {
+      "state": 130,
+      "name": "流星召唤",
+      "rollsPerPickup": 1,
+      "formulaMax": "max(1, round(0.8 × target.maxhp / 40))",
+      "actualMax": "min(formulaMax, 12)",
+      "result": "均匀随机整数 1–actualMax 轮",
+      "meteorsPerRound": 5,
+      "baseDamageEachMeteor": 8,
+      "meteorIntervalMs": 200,
+      "roundIntervalMs": 1000
+    },
+    {
+      "state": 131,
+      "name": "死亡射线",
+      "rollsPerPickup": 1,
+      "formulaMax": "max(1, round(0.8 × target.maxhp / 35))",
+      "actualMax": "min(formulaMax, 24)",
+      "result": "均匀随机整数 1–actualMax 道",
+      "baseDamageEach": 35,
+      "beamIntervalMs": 220
+    },
+    {
+      "state": 160,
+      "name": "上帝之手",
+      "result": "每件只抛飞一次"
+    },
+    {
+      "state": 200,
+      "name": "三连发大招",
+      "result": "每件只触发一组；组内固定3次，间隔400ms"
+    }
+  ],
+  "unchanged": [
+    "共鸣者遇到生命/位置互换等对称效果仍只结算一次",
+    "不死鸟、微缩者被动约6秒大招、同spawn拾取去重沿用actionlimits1",
+    "拟态复制对手外观并让双方随机弹飞",
+    "其余道具不新增次数或叠层策略"
+  ]
+}

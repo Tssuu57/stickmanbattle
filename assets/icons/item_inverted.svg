@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<g stroke="#000" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+<path d="M30 30 L 30 50 Q 30 80 64 80 L 98 80" fill="none" stroke="#FFD43B" stroke-width="10"/>
+<polygon points="98,80 80,68 80,92" fill="#FFD43B"/>
+<path d="M98 60 L 98 40 Q 98 20 64 20 L 30 20" fill="none" stroke="#E03131" stroke-width="10"/>
+<polygon points="30,20 48,8 48,32" fill="#E03131"/>
+</g>
+</svg>
