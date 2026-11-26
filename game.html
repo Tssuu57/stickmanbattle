@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<script src="/touch-input.r1.js"></script>
+  <base href="/">
+  <meta charset="utf-8">
+
+  <title>StickmanBattle</title><script src="/poki-sdk.js?v=originalrestore1"></script>
+
+  
+  <meta name="viewport"
+        content="width=device-width,user-scalable=no,initial-scale=1, minimum-scale=1,maximum-scale=1"/>
+
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
+
+  
+  <meta name="renderer" content="webkit"/>
+  <meta name="force-rendering" content="webkit"/>
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+  <meta name="msapplication-tap-highlight" content="no">
+
+  
+  <meta name="full-screen" content="yes"/>
+  <meta name="x5-fullscreen" content="true"/>
+  <meta name="360-fullscreen" content="true"/>
+  
+  
+  <meta name="screen-orientation" content="landscape"/>
+  <meta name="x5-orientation" content="landscape">
+
+  
+  
+  <meta name="x5-page-mode" content="app">
+
+  
+  
+
+  <link rel="stylesheet" type="text/css" href="/style-mobile.25fc5.css?v=originalrestore1"/>
+</head>
+<body><script>PokiSDK.init().then(()=>{console.log("Poki SDK successfully initialized");}).catch(()=>{console.log("Initialized, something went wrong");});</script>
+  <canvas id="GameCanvas" oncontextmenu="event.preventDefault()" tabindex="0"></canvas>
+  <div id="splash">
+    <div class="progress-bar stripes">
+      <span style="width: 0%"></span>
+    </div>
+  </div>
+
+<script src="/startup-lifecycle.reopenwebgl1.js?v=reopenwebgl1" charset="utf-8"></script>
+<script>window.__stickmanWebGLLifecycle.installCanvas(document.getElementById('GameCanvas'));</script>
+<script src="/src/settings.fixr12.js" charset="utf-8" onerror="window.__gameStartup.fail('配置脚本下载','settings.pickuphud1.js',null,{autoRecover:true})"></script>
+<script src="/easteregg-runtime.r2.js?v=start-easteregg-r2" charset="utf-8"></script>
+<script src="/stickman-fixes.r1.js?v=r21b" charset="utf-8"></script>
+<script src="/stickman-fields.r1.js?v=r23g" charset="utf-8"></script>
+<script src="/stickman-battlelog.r1.js?v=r20" charset="utf-8"></script>
+<script src="/stickman-hud.r1.js?v=r21c" charset="utf-8"></script>
+<script src="/stickman-r22.js?v=r24b" charset="utf-8"></script>
+<script src="/stickman-r23.js?v=r23o" charset="utf-8"></script>
+<script src="/stickman-r23ui.js?v=r23g" charset="utf-8"></script>
+
+<script src="/main.reopenwebgl1.js?v=reopenwebgl1" charset="utf-8" onerror="window.__gameStartup.fail('启动脚本下载','main.reopenwebgl1.js',null,{autoRecover:true})"></script>
+
+<script type="text/javascript">
+(function () {
+if (typeof VConsole !== 'undefined') {
+        window.vConsole = new VConsole();
+    }
+
+    var settings = window._CCSettings;
+    if (!settings) {
+        window.__gameStartup.fail('配置读取', 'window._CCSettings 不存在。', null, {autoRecover:true});
+        return;
+    }
+    var debug = settings.debug;
+    var splash = document.getElementById('splash');
+    splash.style.display = 'block';
+
+    function loadScript (moduleName, cb) {
+      function scriptLoaded () {
+          document.body.removeChild(domScript);
+          domScript.removeEventListener('load', scriptLoaded, false);
+          cb && cb();
+      };
+      var domScript = document.createElement('script');
+      domScript.async = true;
+      domScript.src = '/' + moduleName + '?v=reopenwebgl1';
+      domScript.addEventListener('error', function () { window.__gameStartup.fail('引擎脚本下载', moduleName, null, {autoRecover:true}); });
+      domScript.addEventListener('load', scriptLoaded, false);
+      document.body.appendChild(domScript);
+    }
+
+    loadScript(debug ? 'cocos2d-js.js' : 'cocos2d-js-min.reopenwebgl1.js', function () {
+      if (window.__installTouchBridge) window.__installTouchBridge();
+      if (CC_PHYSICS_BUILTIN || CC_PHYSICS_CANNON) {
+        loadScript(debug ? 'physics.js' : 'physics-min.js', window.boot);
+      }
+      else {
+        if (typeof window.boot === 'function') window.boot();
+        else window.__gameStartup.fail('启动函数', 'window.boot 不存在。', null, {autoRecover:true});
+      }
+    });
+})();
+</script>
+</body>
+</html>

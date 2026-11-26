@@ -1,4 +1,4 @@
-window.__guideThumbs={"0": "assets/icons/guide-small-r1/item_hp.png", "1": "assets/icons/guide-small-r1/item_shield.png", "2": "assets/icons/guide-small-r1/item_atkbuff.png", "3": "assets/icons/guide-small-r1/item_berserk.png", "4": "assets/icons/guide-small-r1/item_random_weapon.png", "5": "assets/icons/guide-small-r1/item_summon.png", "7": "assets/icons/guide-small-r1/item_fly.png", "8": "assets/icons/guide-small-r1/item_totem.png", "9": "assets/icons/guide-small-r1/item_random.png", "10": "assets/icons/guide-small-r1/item_giant.png", "11": "assets/icons/guide-small-r1/item_shrink.png", "13": "assets/icons/guide-small-r1/item_timestop.png", "14": "assets/icons/guide-small-r1/item_triplecast.png", "21": "assets/icons/guide-small-r1/item_hook.png", "33": "assets/icons/guide-small-r1/item_soul_swap.png", "37": "assets/icons/guide-small-r1/item_steal.png", "38": "assets/icons/guide-small-r1/item_reflect_5s.png", "51": "assets/icons/guide-small-r1/item_bomb.png", "52": "assets/icons/guide-small-r1/item_disarm.png", "64": "assets/icons/guide-small-r1/item_bloodthirst.png", "70": "assets/icons/guide-small-r1/item_frost.png", "73": "assets/icons/guide-small-r1/item_anchor.png", "74": "assets/icons/guide-small-r1/item_silence.png", "80": "assets/icons/guide-small-r1/item_dome.png", "85": "assets/icons/guide-small-r1/item_feather.png", "100": "assets/icons/guide-small-r1/item_disguise.png", "101": "assets/icons/guide-small-r1/item_greedy.png", "103": "assets/icons/guide-small-r1/item_gamble.png", "125": "assets/icons/guide-small-r1/item_passwap.png", "130": "assets/icons/guide-small-r1/item_meteor.png", "131": "assets/icons/guide-small-r1/item_laser.png", "160": "assets/icons/guide-small-r1/item_godhand.png", "200": "assets/icons/guide-small-r1/item_triplecast.png", "30": "assets/icons/guide-small-r1/item_blink.png", "110": "assets/icons/guide-small-r1/item_invert.png", "150": "assets/icons/guide-small-r1/item_swap.png"};
+window.__guideThumbs={"0": "/assets/icons/guide-small-r1/item_hp.png", "1": "/assets/icons/guide-small-r1/item_shield.png", "2": "/assets/icons/guide-small-r1/item_atkbuff.png", "3": "/assets/icons/guide-small-r1/item_berserk.png", "4": "/assets/icons/guide-small-r1/item_random_weapon.png", "5": "/assets/icons/guide-small-r1/item_summon.png", "7": "/assets/icons/guide-small-r1/item_fly.png", "8": "/assets/icons/guide-small-r1/item_totem.png", "9": "/assets/icons/guide-small-r1/item_random.png", "10": "/assets/icons/guide-small-r1/item_giant.png", "11": "/assets/icons/guide-small-r1/item_shrink.png", "13": "/assets/icons/guide-small-r1/item_timestop.png", "14": "/assets/icons/guide-small-r1/item_triplecast.png", "21": "/assets/icons/guide-small-r1/item_hook.png", "33": "/assets/icons/guide-small-r1/item_soul_swap.png", "37": "/assets/icons/guide-small-r1/item_steal.png", "38": "/assets/icons/guide-small-r1/item_reflect_5s.png", "51": "/assets/icons/guide-small-r1/item_bomb.png", "52": "/assets/icons/guide-small-r1/item_disarm.png", "64": "/assets/icons/guide-small-r1/item_bloodthirst.png", "70": "/assets/icons/guide-small-r1/item_frost.png", "73": "/assets/icons/guide-small-r1/item_anchor.png", "74": "/assets/icons/guide-small-r1/item_silence.png", "80": "/assets/icons/guide-small-r1/item_dome.png", "85": "/assets/icons/guide-small-r1/item_feather.png", "100": "/assets/icons/guide-small-r1/item_disguise.png", "101": "/assets/icons/guide-small-r1/item_greedy.png", "103": "/assets/icons/guide-small-r1/item_gamble.png", "125": "/assets/icons/guide-small-r1/item_passwap.png", "130": "/assets/icons/guide-small-r1/item_meteor.png", "131": "/assets/icons/guide-small-r1/item_laser.png", "160": "/assets/icons/guide-small-r1/item_godhand.png", "200": "/assets/icons/guide-small-r1/item_triplecast.png", "30": "/assets/icons/guide-small-r1/item_blink.png", "110": "/assets/icons/guide-small-r1/item_invert.png", "150": "/assets/icons/guide-small-r1/item_swap.png"};
 window.__capBudgetedItemDamage=function(hc,damage){
   var plan=hc.__activeItemDamageBudget;
   if(!plan)return damage;
@@ -42,43 +42,43 @@ if("suverweapon"==t.node.group){var n=e.getWorldManifold();if("player1"==o.node.
 
 ;(function(){
 window.__itemIcons = {
-  0: "assets/icons/selectedart1/item_hp.png",
-  1: "assets/icons/selectedart1/item_shield.png",
-  2: "assets/icons/selectedart1/item_atkbuff.png",
-  3: "assets/icons/selectedart1/item_berserk.png",
-  4: "assets/icons/selectedart1/item_random_weapon.png",
-  5: "assets/icons/selectedart1/item_summon.png",
-  7: "assets/icons/selectedart1/item_fly.png",
-  8: "assets/icons/selectedart1/item_totem.png",
-  9: "assets/icons/selectedart1/item_random.png",
-  10: "assets/icons/selectedart1/item_giant.png",
-  11: "assets/icons/selectedart1/item_shrink.png",
-  13: "assets/icons/selectedart1/item_timestop.png",
-  14: "assets/icons/selectedart1/item_triplecast.png",
-  21: "assets/icons/selectedart1/item_hook.png",
-  33: "assets/icons/selectedart1/item_soul_swap.png",
-  37: "assets/icons/selectedart1/item_steal.png",
-  38: "assets/icons/selectedart1/item_reflect_5s.png",
-  51: "assets/icons/selectedart1/item_bomb.png",
-  52: "assets/icons/selectedart1/item_disarm.png",
-  64: "assets/icons/selectedart1/item_bloodthirst.png",
-  70: "assets/icons/selectedart1/item_frost.png",
-  73: "assets/icons/selectedart1/item_anchor.png",
-  74: "assets/icons/selectedart1/item_silence.png",
-  80: "assets/icons/selectedart1/item_dome.png",
-  85: "assets/icons/selectedart1/item_feather.png",
-  100: "assets/icons/selectedart1/item_disguise.png",
-  101: "assets/icons/selectedart1/item_greedy.png",
-  103: "assets/icons/selectedart1/item_gamble.png",
-  125: "assets/icons/selectedart1/item_passwap.png",
-  130: "assets/icons/selectedart1/item_meteor.png",
-  131: "assets/icons/selectedart1/item_laser.png",
-  160: "assets/icons/selectedart1/item_godhand.png",
-  200: "assets/icons/selectedart1/item_triplecast.png",
-  30: "assets/icons/selectedart1/item_blink.png",
-  110: "assets/icons/selectedart1/item_invert.png",
-  75: "assets/icons/item_inverted.svg",
-  150: "assets/icons/selectedart1/item_swap.png",
+  0: "/assets/icons/selectedart1/item_hp.png",
+  1: "/assets/icons/selectedart1/item_shield.png",
+  2: "/assets/icons/selectedart1/item_atkbuff.png",
+  3: "/assets/icons/selectedart1/item_berserk.png",
+  4: "/assets/icons/selectedart1/item_random_weapon.png",
+  5: "/assets/icons/selectedart1/item_summon.png",
+  7: "/assets/icons/selectedart1/item_fly.png",
+  8: "/assets/icons/selectedart1/item_totem.png",
+  9: "/assets/icons/selectedart1/item_random.png",
+  10: "/assets/icons/selectedart1/item_giant.png",
+  11: "/assets/icons/selectedart1/item_shrink.png",
+  13: "/assets/icons/selectedart1/item_timestop.png",
+  14: "/assets/icons/selectedart1/item_triplecast.png",
+  21: "/assets/icons/selectedart1/item_hook.png",
+  33: "/assets/icons/selectedart1/item_soul_swap.png",
+  37: "/assets/icons/selectedart1/item_steal.png",
+  38: "/assets/icons/selectedart1/item_reflect_5s.png",
+  51: "/assets/icons/selectedart1/item_bomb.png",
+  52: "/assets/icons/selectedart1/item_disarm.png",
+  64: "/assets/icons/selectedart1/item_bloodthirst.png",
+  70: "/assets/icons/selectedart1/item_frost.png",
+  73: "/assets/icons/selectedart1/item_anchor.png",
+  74: "/assets/icons/selectedart1/item_silence.png",
+  80: "/assets/icons/selectedart1/item_dome.png",
+  85: "/assets/icons/selectedart1/item_feather.png",
+  100: "/assets/icons/selectedart1/item_disguise.png",
+  101: "/assets/icons/selectedart1/item_greedy.png",
+  103: "/assets/icons/selectedart1/item_gamble.png",
+  125: "/assets/icons/selectedart1/item_passwap.png",
+  130: "/assets/icons/selectedart1/item_meteor.png",
+  131: "/assets/icons/selectedart1/item_laser.png",
+  160: "/assets/icons/selectedart1/item_godhand.png",
+  200: "/assets/icons/selectedart1/item_triplecast.png",
+  30: "/assets/icons/selectedart1/item_blink.png",
+  110: "/assets/icons/selectedart1/item_invert.png",
+  75: "/assets/icons/item_inverted.svg",
+  150: "/assets/icons/selectedart1/item_swap.png",
 };
 window.__itemTextureCache = {};
 // 启动时预加载所有道具图标到缓存，避免吃道具时图标-效果错位
@@ -1969,7 +1969,7 @@ setInterval(window.__updateItemPanel,250);
       var lbl=title.getComponent(cc.Label);
       if(lbl)lbl.string="";
       // 加载 iload.png 作为 Sprite
-      cc.assetManager.loadRemote("iload.png",{ext:".png"},function(err,tex){
+      cc.assetManager.loadRemote("/iload.png",{ext:".png"},function(err,tex){
         if(err||!tex)return;
         var sp=title.getComponent(cc.Sprite);
         if(!sp)sp=title.addComponent(cc.Sprite);
@@ -2081,7 +2081,7 @@ window.__ITEM_DATA=[
 // === 启动时 fetch 外部 JSON 覆盖（让 user 可独立编辑）===
 (function(){
   try{
-    var url="assets/passive_item_data.originalnamesr1.json?t="+Date.now();
+    var url="/assets/passive_item_data.originalnamesr1.json?t="+Date.now();
     fetch(url).then(function(r){return r.json();}).then(function(data){
       if(!data)return;
       // 覆盖 PASSIVES（保持原数组引用）
@@ -4291,8 +4291,8 @@ if(window.__PASSIVES){
   if(!window.__PASSIVES.some(function(p){return p.id===PASSIVE_CONTRACT;}))window.__PASSIVES.push({id:PASSIVE_CONTRACT,name:"禁咒契约",desc:"生命上限大幅降低，存活时封锁对手大招"});
 }
 if(window.__itemIcons){
-  window.__itemIcons[ITEM_ANCHOR]="assets/icons/anchorcontract1/item_anchor_return.svg";
-  window.__itemIcons[ITEM_CEASEFIRE]="assets/icons/anchorcontract1/item_ceasefire.svg";
+  window.__itemIcons[ITEM_ANCHOR]="/assets/icons/anchorcontract1/item_anchor_return.svg";
+  window.__itemIcons[ITEM_CEASEFIRE]="/assets/icons/anchorcontract1/item_ceasefire.svg";
 }
 if(window.__ITEM_DATA){
   [{state:201,emoji:"",name:"紧急回锚",short:"3秒后回原位",detail:"3秒后返回锚点，不恢复状态"},{state:203,emoji:"",name:"停火圈",short:"圈内无法起手",detail:"圈内不能发起新攻击，持续10秒"}].forEach(function(x){if(!window.__ITEM_DATA.some(function(i){return i.state===x.state;}))window.__ITEM_DATA.push(x);});
