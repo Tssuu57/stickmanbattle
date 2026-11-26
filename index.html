@@ -492,10 +492,6 @@
       function open() {
         panel.classList.add('__open');
         wrap.classList.remove('__idle');
-        var n = 0;
-        for (var i = 0; i < VERS.length && n < 2; i++) {
-          if (VERS[i][0] !== cur) { warm(VERS[i][0]); n++; }
-        }
       }
       function close() { panel.classList.remove('__open'); idle(); }
       function idle() { if (panel.classList.contains('__open')) return; wrap.classList.add('__idle'); }
