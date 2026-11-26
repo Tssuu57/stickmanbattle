@@ -7,7 +7,7 @@
 
 ## 在线游玩
 
-打开 https://tssuu57.github.io/stickmanbattle/ 即可，首次加载需要下载约 39MB 资源，之后浏览器会缓存。
+打开 https://tssuu57.github.io/stickmanbattle/ 即可，首次加载约需下载 8MB（整目录 14MB），之后浏览器会缓存。
 
 支持 Chrome / Edge / Firefox 等现代浏览器，**需要开启硬件加速**（游戏依赖 WebGL 渲染）。
 
@@ -63,6 +63,19 @@ npx serve .
 | 空间感 | 按命中点横向位置做 ±0.45 立体声定位，音高随机 ±9% |
 
 调试开关：`?audio=0` 关闭整层（回落原音效）。
+
+## 资源路径修正层
+
+主包与各补丁层里硬编码了大量 `"/assets/..."` 绝对路径（HUD 图标、拾取提示、道具贴图、场地元素、被动光环等）。这类路径以域名根为基准，站点部署在 `/stickmanbattle/` 子目录时会解析到 `https://host/assets/...`，**全部 404**，表现为图标破图或空白。
+
+`stickman-assets.r1.js` 在补丁层统一改写：
+
+- `__guideThumbs` / `__itemIcons` 两个字典用 Proxy 拦截，整体赋值与逐项写入都会转成"基于当前页面"的地址
+- 包装 `cc.assetManager.loadRemote`，Cocos 侧远程贴图一并修正
+- 兼容三种部署：GitHub Pages 项目页、本地 `http://127.0.0.1:port/`、离线 `file://`
+- 遗漏的 `<img>` 会被巡检修正；加载失败时隐藏而非显示浏览器破图
+
+调试开关：`?asset=0` 关闭本层；控制台 `__assetPathFix.report()` 查看修正记录。
 
 ## 手感层与打击感层
 
