@@ -344,11 +344,11 @@
   var POOL_GOOD=[0,1,2,4,7,8,10,11,38,64,70,74,80,85,101,130,131];
   function installItems(){
     if(!window.__applyItemToOne||!window.__itemIcons||!window.__itemTextureCache||!window.__ITEM_DATA)return false;
-    if(window.__applyItemToOne.__r22)return true;
     if(!installItems.icons){ installItems.icons=true; NEW_ITEMS.forEach(function(it){
       window.__itemIcons[it.state]=it.icon; if(window.__guideThumbs)window.__guideThumbs[it.state]=it.icon;
       cc.assetManager.loadRemote(it.icon,{ext:".png"},function(e,t){ if(!e&&t)window.__itemTextureCache[it.state]=new cc.SpriteFrame(t); else LOG("图标失败",it.state); });
     }); }
+    if(window.__applyItemToOne.__r22)return true;
     var prev=window.__applyItemToOne;
     var f=function(state,n){
       var me=(window.__fixR1&&window.__fixR1.resolveHuman)?window.__fixR1.resolveHuman(n):n;

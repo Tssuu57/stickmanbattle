@@ -80,7 +80,11 @@
   function icon(it){
     if(!it)return "";
     var u=(window.__guideThumbs||{})[it.state]||(window.__itemIcons||{})[it.state];
-    if(u)return "<img src='"+u+"' style='width:16px;height:16px;object-fit:contain;vertical-align:-3px;margin-right:3px'>";
+    if(u){
+      try{ if(window.__assetPathFix)u=window.__assetPathFix.fix(u); }catch(_){}
+      u=String(u).replace(/'/g,"%27");
+      return "<img src='"+u+"' alt='' onerror=\"this.style.display='none'\" style='width:16px;height:16px;object-fit:contain;vertical-align:-3px;margin-right:3px'>";
+    }
     return it.emoji?it.emoji+" ":"";
   }
   function passiveOf(k){
