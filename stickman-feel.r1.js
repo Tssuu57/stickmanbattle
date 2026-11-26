@@ -31,6 +31,7 @@
   // 参数集中放这里，方便调
   var CFG = {
     burstSpeed: 305,   // 起步一脚把水平速度带到多少（原版巡航约 300）
+    burstImpulse: 900, // 起步蹬地冲量（走物理传导）
     airCap: 380,       // 空中水平速度目标
     airGain: 16,       // 空中辅助力系数
     airForce: 4200,    // 空中单帧力上限
@@ -187,17 +188,17 @@
     h.__feelDir = dir;
     h.__feelWasRun = isRun;
 
-    if (st === 0 && isRun && dir && Date.now() - (h.__feelInputAt || 0) < 90 && (dir !== prevDir || !wasRun)) {
+    var now2 = Date.now();
+    if (st === 0 && isRun && dir && now2 - (h.__feelInputAt || 0) < 90 && (dir !== prevDir || !wasRun)) {
       try {
         var v = body.linearVelocity;
-        // 只在还没跑起来 / 正在反向时补一脚
+        // 只在还没跑起来 / 正在反向时蹬一脚
         if (v.x * dir < CFG.burstSpeed) {
-          var nv = dir * CFG.burstSpeed;
-          if (Math.abs(nv - v.x) > 60) {
-            body.linearVelocity = cc.v2(nv, v.y);
-            F.boosts++;
-          }
+          body.applyLinearImpulse(cc.v2(dir * CFG.burstImpulse, 0), body.getWorldCenter(), true);
+          F.boosts++;
         }
+        h.__feelImpulseAt = now2;
+        h.__feelBurstDir = dir;
       } catch (_) {}
     }
 
