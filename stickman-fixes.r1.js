@@ -97,6 +97,8 @@
     var winner = p1d&&!p2d ? 2 : (!p1d&&p2d ? 1 : 0);   // 0 = 同归于尽
     try{ cc.director.getScheduler().setTimeScale(1); cc.PhysicsManager.FIXED_TIME_STEP=1/60; cc.director.getPhysicsManager().enabledAccumulator=false; }catch(_){}
     try{ var cam=cc.find("Canvas/MainCamera"); var cf=cam&&cam.getComponents(cc.Component).filter(function(x){return "isDeadCamera" in x;})[0]; if(cf){cf.isDeadCamera=false;cf.isDeadTarget=null;} }catch(_){}
+    // 先让场上角色停手再收摇杆：否则摇杆被隐藏后收不到 touchend，方向会一直留着
+    try{ window.__stopBattle && window.__stopBattle("roundEnd"); }catch(_){}
     try{ cc.find("Canvas/MainView/Joy").active=false; }catch(_){}
     c.gameStart=false;
     var up=req("UserProfile").userProfile, d=up.data;
@@ -964,4 +966,134 @@
       });
     }catch(_){}
   },200);
+})();
+
+// ================= 结算后世界不停止 =================
+// 结算面板出现后，原版只把 MainView（HUD/摇杆）隐藏，战斗逻辑和物理照旧在跑：
+//   · 摇杆被隐藏 → 收不到 touchend → _endTouch 不会被调用，checkChange 与 _PlayerState=Run 一直留着
+//   · Human.lateUpdate 只要 _PlayerState 不是 Idel，就会每帧 RunToAddForce（3000+ 的水平力）
+//   · 已经死掉的角色也一样：dead() 只放松了关节，没有停掉 Human 的跑动驱动
+// 结果就是没人操作，角色也会自己走。这里在结算出现时统一收杆、立正，并把物理定格。
+(function(){
+  if(window.__endFreeze)return;
+  if(/[?&]endfix=0/.test(location.search))return; // 调试开关：?endfix=0 关闭结算定格
+  var E=window.__endFreeze={over:false, physOff:false, stops:0, lastReason:""};
+
+  function req(n){ try{ return window.__require(n); }catch(_){ return null; } }
+  function cfg(){ var m=req("ConfigManager"); return m&&m.gameConfig; }
+  function canvas(){ try{ return cc.find("Canvas"); }catch(_){ return null; } }
+  function allHumans(){ var c=canvas(); if(!c)return []; try{ return c.getComponentsInChildren("Human")||[]; }catch(_){ return []; } }
+  function hcOf(n){ try{ return n&&n.getComponent("HumanController"); }catch(_){ return null; } }
+  function isAlive(n){ var hc=hcOf(n); return !!(hc && hc.hp>0 && !hc.isDead); }
+
+  // 收杆：活人走原版 _endTouch（复位摇杆 + setAble 回站立）；死人只清输入，别把尸体扶正
+  function stopJoysticks(){
+    var c=canvas(); if(!c)return;
+    var js=[]; try{ js=c.getComponentsInChildren("JoyStick")||[]; }catch(_){}
+    for(var i=0;i<js.length;i++){
+      var j=js[i];
+      try{
+        var h=j.human2;
+        if(h && !isAlive(h.node)){ h.checkChange=0; h._PlayerState=1; continue; }
+        if(typeof j._endTouch==="function") j._endTouch();
+      }catch(_){}
+    }
+  }
+
+  // 立正：清掉残留的跑动状态（Idel 之后 lateUpdate 不再施加水平推力）
+  function still(h){
+    if(!h||!h.node||!h.node.isValid)return;
+    try{
+      h.__feelFrozen=true;
+      h.checkChange=0;
+      h._PlayerState=1;        // Idel
+      h._jumpProgress=0;
+      h.__stunUntil=0;
+      if(h.JumpLines) h.JumpLines.active=false;
+      h._flyEnd=0;             // 飞行技能每帧直接写刚体速度，必须关掉
+      var b=h._BodyrigidBody;
+      if(b&&b.isValid){
+        if(b.gravityScale===0) b.gravityScale=1;
+        var v=b.linearVelocity;
+        // 立正瞬间把水平惯性收掉，避免结算后还滑一段
+        if(Math.abs(v.x)>40) b.linearVelocity=cc.v2(v.x*0.15,v.y);
+      }
+    }catch(_){}
+  }
+
+  function stopBattle(reason){
+    try{
+      stopJoysticks();
+      var hs=allHumans();
+      for(var i=0;i<hs.length;i++){
+        still(hs[i]);
+        // 活人补一次站立姿态（死人不能扶正，会像诈尸）
+        if(isAlive(hs[i].node) && typeof hs[i].setAble==="function"){
+          try{ hs[i].setAble(); }catch(_){}
+        }
+      }
+      var c=canvas();
+      var ais=c?c.getComponentsInChildren("AiCtrl"):[];
+      for(var k=0;k<ais.length;k++){ try{ ais[k].enabled=false; }catch(_){} }
+      E.stops++; E.lastReason=reason||"";
+      try{ console.log("[END] 场上角色已停止 ("+(reason||"")+")"); }catch(_){}
+    }catch(_){}
+  }
+  window.__stopBattle=stopBattle;
+
+  function physics(on){
+    try{
+      var pm=cc.director.getPhysicsManager();
+      if(!pm)return;
+      if(on && !E.physOff)return;
+      if(!on && E.physOff)return;
+      pm.enabled=!!on;
+      E.physOff=!on;
+    }catch(_){}
+  }
+
+  function thaw(){
+    physics(true);
+    var hs=allHumans();
+    for(var i=0;i<hs.length;i++){ try{ hs[i].__feelFrozen=false; }catch(_){} }
+    var c=canvas();
+    var ais=c?c.getComponentsInChildren("AiCtrl"):[];
+    for(var k=0;k<ais.length;k++){ try{ ais[k].enabled=true; }catch(_){} }
+  }
+
+  var freezeTimer=null;
+  setInterval(function(){
+    try{
+      if(!window.cc||!cc.director||!cc.director.getScene)return;
+      var c=cfg(); if(!c)return;
+      var over=!!c.isShowFinishView;
+      if(over===E.over)return;
+      E.over=over;
+      if(over){
+        stopBattle("finishView");
+        // 等死亡动作落定再定格，避免尸体停在半空
+        clearTimeout(freezeTimer);
+        freezeTimer=setTimeout(function(){
+          var c2=cfg();
+          if(c2&&c2.isShowFinishView) physics(false);
+        }, 300);
+      }else{
+        clearTimeout(freezeTimer);
+        thaw();
+      }
+    }catch(_){}
+  }, 80);
+
+  // 换场景必定恢复物理，避免下一局全部僵住
+  try{
+    cc.director.on(cc.Director.EVENT_AFTER_SCENE_LAUNCH, function(){
+      E.over=false; clearTimeout(freezeTimer); thaw();
+    });
+  }catch(_){}
+
+  E.report=function(){
+    var hs=allHumans();
+    return {over:E.over, physOff:E.physOff, stops:E.stops, reason:E.lastReason,
+            humans:hs.map(function(h){ return {n:h.node&&h.node.name, st:h._PlayerState, cc:h.checkChange, fz:!!h.__feelFrozen}; })};
+  };
 })();

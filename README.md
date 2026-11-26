@@ -83,6 +83,19 @@ npx serve .
 - `stickman-juice.r1.js`：受击顿帧、分级震屏、伤害飘字、残血红边、击杀白闪。`?juice=0` 关闭。
 - `stickman-nosolo.r1.js`：隐藏单人入口。`?nosolo=0` 查看原版布局。
 
+## 结算定格
+
+原版结算只把 `MainView`（HUD/摇杆）隐藏，战斗逻辑和物理照旧在跑。摇杆被隐藏后收不到 `touchend`，`_endTouch` 不会被调用，`checkChange` 与 `_PlayerState=Run` 一直留着；`Human.lateUpdate` 只要状态不是 `Idel` 就每帧 `RunToAddForce`（3000+ 水平力），于是没人操作角色也会自己走。
+
+`stickman-fixes.r1.js` 末尾的结算段处理这件事：
+
+- 结算出现（`gameConfig.isShowFinishView`）时收杆：活人走原版 `_endTouch`（复位摇杆 + `setAble` 回站立），死人只清输入
+- 清掉残留跑动状态并把水平惯性收到 15%，避免结算后继续滑行
+- 420ms 后关闭 `PhysicsManager`，整个世界定格（尸体也不会被残余力推着动）
+- 新一局、换场景、点 OK 返回时自动恢复物理与 AI
+
+调试开关：`?endfix=0` 关闭本段；控制台 `__endFreeze.report()` 查看状态。
+
 ## 技术说明
 
 浏览器的 `file://` 协议有三重限制：XHR 读本地 JSON 被 CORS 拦截、`fetch` 不支持 file scheme、本地图片作为 WebGL 纹理被判为跨源污染。

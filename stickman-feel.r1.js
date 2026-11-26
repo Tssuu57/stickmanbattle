@@ -116,6 +116,10 @@
     P.setVec = function () {
       this.__feelInputAt = Date.now();
       try {
+        // 结算后：无论摇杆还是 AI 再推，都不接受，保持站立
+        if (this.__feelFrozen) { this._PlayerState = 1; this.checkChange = 0; return; }
+      } catch (_) {}
+      try {
         if (this.__stunUntil && Date.now() < this.__stunUntil) {
           this._PlayerState = 1; // Idle：硬直期间不接受移动输入
           return;
@@ -129,6 +133,7 @@
     P.HumanJump = function () {
       this.__feelInputAt = Date.now();
       try {
+        if (this.__feelFrozen) return;
         if (this.__stunUntil && Date.now() < this.__stunUntil) return;
       } catch (_) {}
       var now = Date.now();
@@ -173,6 +178,7 @@
 
   function tickHuman(h) {
     if (!h || !h.isValid) return;
+    if (h.__feelFrozen) return; // 结算后不再施加起步/空中辅助力
     var body = h._BodyrigidBody;
     var st = h._bodyState;
 
