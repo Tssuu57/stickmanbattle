@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>StickmanBattle · 离线版</title>
+  <title>Stickman Battle</title>
   <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1"/>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -19,14 +19,6 @@
   <meta name="x5-orientation" content="landscape">
   <meta name="x5-page-mode" content="app">
 
-  <script>
-    /* 版本切换：默认最新版 fixr12，可用 ?v=<版本名> 指定历史版本 */
-    (function () {
-      var m = /[?&]v=([\w.-]+)/.exec(location.search);
-      window.__VER_TAG = (m && m[1]) || 'fixr12';
-      window.__VER_LATEST = 'fixr12';
-    })();
-  </script>
 
   <link rel="preload" as="image" href="iload.png"/>
   <link rel="stylesheet" type="text/css" href="style-mobile.25fc5.css"/>
@@ -121,15 +113,6 @@
   <script src="startup-lifecycle.reopenwebgl1.js" charset="utf-8"></script>
   <script>window.__stickmanWebGLLifecycle.installCanvas(document.getElementById('GameCanvas'));</script>
   <script src="src/settings.fixr12.js" charset="utf-8" onerror="window.__gameStartup.fail('配置脚本下载','settings.pickuphud1.js',null,{autoRecover:true})"></script>
-  <script>
-    /* 历史版本：改写 main bundle 的版本号，引擎会去取 config.<ver>.json / index.<ver>.js */
-    (function () {
-      var t = window.__VER_TAG;
-      if (t && t !== 'fixr12' && window._CCSettings && window._CCSettings.bundleVers) {
-        window._CCSettings.bundleVers.main = t;
-      }
-    })();
-  </script>
   <script src="easteregg-runtime.r2.js" charset="utf-8"></script>
   <script src="stickman-fixes.r1.js" charset="utf-8"></script>
   <script src="stickman-fields.r1.js" charset="utf-8"></script>
@@ -184,101 +167,14 @@
   })();
   </script>
 
-  <!-- 版本切换入口（左上角，默认最新版） -->
-  <div id="__verWrap">
-    <button id="__verBtn" type="button">
-      <span class="__ver-ico">⟳</span>
-      <span id="__verNow">最新版</span>
-      <span class="__ver-caret">▾</span>
-    </button>
-    <div id="__verPanel">
-      <div class="__ver-head">选择游戏版本<span class="__ver-close" id="__verClose">×</span></div>
-      <div class="__ver-list" id="__verList"></div>
-      <div class="__ver-foot" id="__verFoot"></div>
-    </div>
-  </div>
-
-  <!-- 切换准备 / 加载超时自救浮层 -->
-  <div id="__verMask">
-    <div class="__m-title" id="__mTitle">正在准备…</div>
-    <div class="__m-sub" id="__mSub"></div>
-    <div class="__m-bar"><i id="__mBar"></i></div>
-    <div class="__m-err" id="__mErr"></div>
-    <div class="__m-btns" id="__mBtns"></div>
-  </div>
+  <!-- 加载过慢提示（不遮挡游戏） -->
   <div id="__slowTip">
     <span id="__slowTxt">加载较慢，仍在进行中…</span>
-    <button id="__slowRetry" class="__ghost">重试</button>
-    <button id="__slowBack">回到最新版</button>
+    <button id="__slowRetry">重新加载</button>
   </div>
   <style>
-    #__verWrap{position:fixed;left:10px;top:10px;z-index:999998;
-      font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
-    #__verBtn{display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:99px;cursor:pointer;
-      border:2px solid rgba(255,255,255,.28);background:rgba(10,20,40,.62);color:#dce9ff;
-      font-size:12px;font-weight:700;line-height:1;backdrop-filter:blur(6px);
-      transition:opacity .3s ease,border-color .2s,background .2s}
-    #__verBtn:hover{border-color:#7fb6ff;background:rgba(16,32,60,.9);color:#fff}
-    #__verWrap.__idle #__verBtn{opacity:.42}
-    #__verWrap.__idle:hover #__verBtn{opacity:1}
-    .__ver-ico{font-size:13px;color:#8fc3ff}
-    .__ver-caret{font-size:10px;opacity:.75}
-    #__verPanel{position:absolute;left:0;top:calc(100% + 6px);width:286px;max-height:min(66vh,430px);
-      display:none;flex-direction:column;overflow:hidden;border-radius:12px;
-      background:rgba(9,18,36,.97);border:1px solid rgba(120,170,255,.34);
-      box-shadow:0 12px 34px rgba(0,0,0,.55);color:#dfe9ff}
-    #__verPanel.__open{display:flex}
-    .__ver-head{display:flex;align-items:center;justify-content:space-between;
-      padding:10px 12px;font-size:12px;font-weight:800;color:#9fc0f0;
-      border-bottom:1px solid rgba(120,170,255,.18)}
-    .__ver-close{cursor:pointer;font-size:16px;line-height:1;color:#8aa4cc;padding:0 2px}
-    .__ver-close:hover{color:#fff}
-    .__ver-list{overflow-y:auto;padding:4px}
-    .__ver-item{display:flex;align-items:baseline;gap:8px;padding:7px 9px;border-radius:8px;cursor:pointer}
-    .__ver-item:hover{background:rgba(90,140,220,.2)}
-    .__ver-item.__cur{background:rgba(90,150,255,.26);box-shadow:inset 0 0 0 1px rgba(140,190,255,.45)}
-    .__ver-item.__dis{cursor:not-allowed;opacity:.34}
-    .__ver-item.__dis:hover{background:none}
-    .__ver-tag{font-size:12px;font-weight:700;color:#eaf2ff;min-width:118px}
-    .__ver-date{font-size:10px;color:#7d96bd;font-variant-numeric:tabular-nums}
-    .__ver-note{font-size:10px;color:#93a8c9;margin-left:auto;text-align:right;max-width:96px;
-      overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .__ver-badge{font-size:9px;padding:1px 5px;border-radius:4px;background:#2f7dff;color:#fff;font-weight:800}
-    .__ver-foot{padding:8px 12px;font-size:10px;line-height:1.6;color:#7d96bd;
-      border-top:1px solid rgba(120,170,255,.18);background:rgba(0,0,0,.22)}
-
-    /* 移动端适配：面板不超出屏幕 */
-    @media (max-width: 520px){
-      #__verPanel{width:calc(100vw - 24px);max-width:330px;max-height:min(56vh,380px)}
-      .__ver-tag{min-width:96px;font-size:11px}
-      .__ver-note{max-width:76px;font-size:9px}
-    }
-
-    /* 切换准备 / 超时自救浮层 */
-    #__verMask{position:fixed;inset:0;z-index:1000000;display:none;
-      flex-direction:column;align-items:center;justify-content:center;gap:12px;
-      background:rgba(4,12,26,.88);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
-      color:#dfe9ff;text-align:center;padding:22px;
-      font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
-    #__verMask.__on{display:flex}
-    #__verMask .__m-title{font-size:16px;font-weight:800}
-    #__verMask .__m-sub{font-size:12px;color:#8fb0dd;min-height:17px;line-height:1.6}
-    #__verMask .__m-bar{width:min(260px,70vw);height:6px;border-radius:99px;
-      background:rgba(255,255,255,.15);overflow:hidden}
-    #__verMask .__m-bar i{display:block;height:100%;width:0;border-radius:99px;
-      background:linear-gradient(90deg,#4c9bff,#8fd0ff);transition:width .2s}
-    #__verMask .__m-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px}
-    #__verMask button{padding:9px 18px;border-radius:99px;cursor:pointer;
-      border:1px solid rgba(140,190,255,.5);background:rgba(30,70,140,.7);
-      color:#eaf3ff;font-size:13px;font-weight:700}
-    #__verMask button.__primary{background:#2f7dff;border-color:#2f7dff}
-    #__verMask .__m-err{font-size:11px;color:#ff9c9c;max-width:min(560px,88vw);
-      line-height:1.7;word-break:break-all;display:none;white-space:pre-line}
-    #__verMask .__m-err.__on{display:block}
-
-    /* 加载过慢提示条（不遮挡游戏） */
     #__slowTip{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:999999;
-      display:none;align-items:center;gap:8px;padding:8px 10px 8px 14px;border-radius:99px;
+      display:none;align-items:center;gap:10px;padding:8px 10px 8px 14px;border-radius:99px;
       background:rgba(8,18,36,.92);border:1px solid rgba(120,170,255,.4);
       color:#cfe0fa;font-size:12px;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.5);
       font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
@@ -286,289 +182,33 @@
     #__slowTip button{padding:5px 12px;border-radius:99px;cursor:pointer;font-size:12px;
       font-weight:700;border:1px solid rgba(140,190,255,.45);
       background:rgba(47,125,255,.85);color:#fff}
-    #__slowTip button.__ghost{background:transparent;color:#a9c6ee}
   </style>
   <script>
     (function () {
-      var VERS = [
-        ['fixr12', '11-25', '最新版'],
-        ['fixr11', '11-25', '无限火力'],
-        ['fixr10', '11-25', '命运魔方'],
-        ['fixr9', '11-18', '跳跃/减速调整'],
-        ['fixr8', '11-10', '拾荒者·铁头'],
-        ['fixr7', '11-10', '修复7'],
-        ['fixr6', '11-10', '修复6'],
-        ['originalnamesr1', '09-22', '定名版'],
-        ['restorenameshpr1', '09-22', '名称还原'],
-        ['featherhpr1', '09-21', '轻羽HP'],
-        ['memenamesr1', '09-21', '梗名被动'],
-        ['gravityfixr1', '09-21', '重力修正'],
-        ['pickuphud1', '09-21', '拾取提示'],
-        ['flow8r1', '09-21', '道具8秒'],
-        ['renderperfr3', '09-21', '渲染性能'],
-        ['combatperfr2', '09-21', '战斗性能2'],
-        ['combatperfr1', '09-21', '战斗性能1'],
-        ['weaponstealhotfixr3', '09-21', '武器盗取修复3'],
-        ['weaponstealhotfixr2', '09-21', '武器盗取修复2'],
-        ['weaponstealhotfixr1', '09-21', '武器盗取修复1'],
-        ['guidesummon1', '09-21', '道具图鉴'],
-        ['anchorcontract1', '09-20', '禁咒契约'],
-        ['singlehard1', '09-20', '单人困难'],
-        ['itemcount1', '09-20', '道具数量'],
-        ['selectedart1fix1', '09-20', '选人美术修复'],
-        ['selectedart1', '09-20', '选人美术'],
-        ['bal2', '09-20', '平衡 v2'],
-        ['bal1', '09-20', '平衡 v1'],
-        ['i25basic1', '09-19', '基础配置'],
-        ['000b4', '06-16', '基线版']
-      ];
-
-      var cur = window.__VER_TAG || 'fixr12';
-      var isFile = location.protocol === 'file:';
-      var wrap = document.getElementById('__verWrap');
-      var btn = document.getElementById('__verBtn');
-      var panel = document.getElementById('__verPanel');
-      var list = document.getElementById('__verList');
-      var label = document.getElementById('__verNow');
-      var foot = document.getElementById('__verFoot');
-
-      function pretty(t) { return t === 'fixr12' ? '最新版' : t; }
-      label.textContent = pretty(cur);
-
-      for (var i = 0; i < VERS.length; i++) {
-        (function (v) {
-          var tag = v[0], date = v[1], note = v[2];
-          var row = document.createElement('div');
-          row.className = '__ver-item' + (tag === cur ? ' __cur' : '');
-          if (isFile && tag !== cur) row.className += ' __dis';
-          row.innerHTML = '<span class="__ver-tag">' + tag + '</span>' +
-            '<span class="__ver-date">' + date + '</span>' +
-            (tag === 'fixr12' ? '<span class="__ver-badge">最新</span>' : '') +
-            '<span class="__ver-note">' + note + '</span>';
-          row.onclick = function () {
-            if (isFile && tag !== cur) return;
-            if (tag === cur) { close(); return; }
-            beginSwitch(tag);
-          };
-          list.appendChild(row);
-        })(VERS[i]);
-      }
-
-      foot.textContent = isFile
-        ? '当前为本地离线版，仅内置最新版；切换历史版本请访问在线站点。'
-        : '共 ' + VERS.length + ' 个构建版本，切换前会先检查文件是否可下载。';
-
-      /* ---------------- 切换前预检：先确认文件能下载，再跳转 ---------------- */
-      var maskEl = document.getElementById('__verMask');
-      var mTitle = document.getElementById('__mTitle');
-      var mSub = document.getElementById('__mSub');
-      var mBar = document.getElementById('__mBar');
-      var mErr = document.getElementById('__mErr');
-      var mBtns = document.getElementById('__mBtns');
-      var switching = false;
-
-      function maskShow(title, sub) {
-        mTitle.textContent = title;
-        mSub.textContent = sub || '';
-        mBar.style.width = '0%';
-        mErr.className = '__m-err';
-        mErr.textContent = '';
-        mBtns.innerHTML = '';
-        maskEl.classList.add('__on');
-      }
-      function maskHide() { maskEl.classList.remove('__on'); }
-      function gotoVer(tag, bust) {
-        var q = '?v=' + encodeURIComponent(tag);
-        if (bust) q += '&r=' + Date.now();
-        location.href = location.pathname + q;
-      }
-
-      // 单文件探测：先走缓存，失败再绕缓存重试一次
-      function probeFile(u) {
-        function once(url, cache) {
-          return fetch(url, { cache: cache }).then(function (r) {
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            return r.arrayBuffer();
-          });
-        }
-        return once(u, 'default').catch(function () {
-          return once(u + (u.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now(), 'reload');
-        });
-      }
-
-      function beginSwitch(tag) {
-        if (switching) return;
-        switching = true;
-        close();
-        maskShow('正在切换到 ' + pretty(tag), '检查该版本文件是否可下载…');
-        var files = [
-          'assets/main/config.' + tag + '.json',
-          'assets/main/index.' + tag + '.js'
-        ];
-        var i = 0;
-
-        function fail(msg) {
-          switching = false;
-          mTitle.textContent = '切换失败';
-          mSub.textContent = '当前版本仍可正常游玩，未做任何改动。';
-          mErr.className = '__m-err __on';
-          mErr.textContent = msg;
-          mBtns.innerHTML = '';
-          var b1 = document.createElement('button');
-          b1.className = '__primary';
-          b1.textContent = '重试';
-          b1.onclick = function () { switching = false; beginSwitch(tag); };
-          var b2 = document.createElement('button');
-          b2.textContent = '取消';
-          b2.onclick = function () { switching = false; maskHide(); };
-          mBtns.appendChild(b1);
-          mBtns.appendChild(b2);
-        }
-
-        function next() {
-          if (i >= files.length) {
-            mBar.style.width = '100%';
-            mSub.textContent = '文件已就绪，正在进入…';
-            setTimeout(function () { gotoVer(tag, false); }, 200);
-            return;
-          }
-          var u = files[i];
-          mSub.textContent = '正在下载 ' + (i + 1) + '/' + files.length + '：' +
-            u.split('/').pop() + '（约 ' + (i === 0 ? '0.3' : '1') + ' MB）';
-          var settled = false;
-          var ctl = null;
-          try { ctl = new AbortController(); } catch (e) { ctl = null; }
-          var timer = setTimeout(function () {
-            if (settled) return;
-            settled = true;
-            if (ctl) { try { ctl.abort(); } catch (e) {} }
-            fail('下载超时：' + u + '\n\n可能是网络较慢，或该版本文件尚未部署完成。');
-          }, 30000);
-
-          var opt = { cache: 'default' };
-          if (ctl) opt.signal = ctl.signal;
-          fetch(u, opt).then(function (r) {
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            return r.arrayBuffer();
-          }).catch(function () {
-            // 绕缓存再试一次（防止 CDN 缓存了旧的 404）
-            return fetch(u + (u.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now(), { cache: 'reload' })
-              .then(function (r) {
-                if (!r.ok) throw new Error('HTTP ' + r.status);
-                return r.arrayBuffer();
-              });
-          }).then(function (buf) {
-            if (settled) return;
-            settled = true;
-            clearTimeout(timer);
-            var n = buf ? buf.byteLength : 0;
-            if (n < 120) throw new Error('内容异常（' + n + ' 字节）');
-            i++;
-            mBar.style.width = (i / files.length * 100).toFixed(0) + '%';
-            next();
-          }).catch(function (e) {
-            if (settled) return;
-            settled = true;
-            clearTimeout(timer);
-            var m = (e && e.message) || String(e);
-            fail('无法下载：' + u + '\n' + m + '\n\n该版本可能暂不可用，建议先用最新版。');
-          });
-        }
-        next();
-      }
-
-      /* ---------------- 打开面板时后台预热前几个版本 ---------------- */
-      var warmed = {};
-      function warm(tag) {
-        if (isFile || warmed[tag]) return;
-        warmed[tag] = 1;
+      var tip = document.getElementById('__slowTip');
+      var txt = document.getElementById('__slowTxt');
+      document.getElementById('__slowRetry').onclick = function () { location.reload(); };
+      var t0 = Date.now();
+      function inGame() {
         try {
-          fetch('assets/main/index.' + tag + '.js', { cache: 'default' })
-            .then(function (r) { if (r && r.body && r.body.cancel) r.body.cancel(); })
-            .catch(function () {});
+          var d = window.cc && cc.director;
+          if (d && d.getScene) {
+            var s = d.getScene();
+            if (s && s.name && s.name !== 'Load') return true;
+          }
         } catch (e) { /* 忽略 */ }
+        return false;
       }
-
-      function open() {
-        panel.classList.add('__open');
-        wrap.classList.remove('__idle');
-      }
-      function close() { panel.classList.remove('__open'); idle(); }
-      function idle() { if (panel.classList.contains('__open')) return; wrap.classList.add('__idle'); }
-
-      btn.onclick = function (e) {
-        e.stopPropagation();
-        if (panel.classList.contains('__open')) close(); else open();
-      };
-      document.getElementById('__verClose').onclick = function (e) { e.stopPropagation(); close(); };
-      document.addEventListener('click', function (e) {
-        if (!wrap.contains(e.target)) close();
-      });
-      setTimeout(idle, 4000);
-
-      /* ---------------- 加载看门狗：卡住时提供自救入口 ---------------- */
-      (function () {
-        var tip = document.getElementById('__slowTip');
-        var txt = document.getElementById('__slowTxt');
-        var btnRetry = document.getElementById('__slowRetry');
-        var btnBack = document.getElementById('__slowBack');
-        var t0 = Date.now();
-        var shown = false;
-        var finished = false;
-
-        btnRetry.onclick = function () { location.reload(); };
-        btnBack.onclick = function () { gotoVer('fixr12', true); };
-
-        function inGame() {
-          try {
-            var d = window.cc && cc.director;
-            if (d && d.getScene) {
-              var s = d.getScene();
-              if (s && s.name && s.name !== 'Load') return true;
-            }
-          } catch (e) { /* 忽略 */ }
-          return false;
+      var iv = setInterval(function () {
+        if (inGame()) { clearInterval(iv); tip.classList.remove('__on'); return; }
+        var el = Date.now() - t0;
+        if (el > 20000) {
+          txt.textContent = el > 60000
+            ? '加载仍未完成，建议检查网络后重试'
+            : '加载较慢，仍在进行中…';
+          tip.classList.add('__on');
         }
-
-        var iv = setInterval(function () {
-          if (inGame()) {
-            clearInterval(iv);
-            tip.classList.remove('__on');
-            return;
-          }
-          var el = Date.now() - t0;
-          if (el > (cur !== 'fixr12' ? 12000 : 20000) && !shown) {
-            shown = true;
-            if (cur !== 'fixr12') {
-              txt.textContent = '「' + pretty(cur) + '」加载较慢';
-              tip.classList.add('__on');
-            } else if (!isFile) {
-              txt.textContent = '加载较慢，仍在进行中';
-              tip.classList.add('__on');
-            }
-          }
-          if (el > 35000 && !finished) {
-            finished = true;
-            clearInterval(iv);
-            if (cur !== 'fixr12') {
-              var guard = '__fb_' + cur;
-              var tried = false;
-              try { tried = !!sessionStorage.getItem(guard); } catch (e) {}
-              if (!tried) {
-                try { sessionStorage.setItem(guard, '1'); } catch (e) {}
-                txt.textContent = '自动回到最新版…';
-                tip.classList.add('__on');
-                setTimeout(function () { gotoVer('fixr12', true); }, 900);
-                return;
-              }
-              txt.textContent = '加载超时，请点「回到最新版」';
-            } else {
-              txt.textContent = '加载超时，请检查网络后重试';
-            }
-            tip.classList.add('__on');
-          }
-        }, 700);
-      })();
+      }, 800);
     })();
   </script>
 </body>
