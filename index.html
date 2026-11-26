@@ -19,6 +19,16 @@
   <meta name="x5-orientation" content="landscape">
   <meta name="x5-page-mode" content="app">
 
+  <script>
+    /* 版本切换：默认最新版 fixr12，可用 ?v=<版本名> 指定历史版本 */
+    (function () {
+      var m = /[?&]v=([\w.-]+)/.exec(location.search);
+      window.__VER_TAG = (m && m[1]) || 'fixr12';
+      window.__VER_LATEST = 'fixr12';
+    })();
+  </script>
+
+  <link rel="preload" as="image" href="iload.png"/>
   <link rel="stylesheet" type="text/css" href="style-mobile.25fc5.css"/>
   <script src="poki-sdk.js"></script>
   <script src="touch-input.r1.js"></script>
@@ -80,6 +90,13 @@
   </script>
 
   <!-- ② 请求拦截层：让引擎从内存读取资源 -->
+  <script>
+    /* 在线模式：iload.png 改由实体文件加载（内联纹理在部分浏览器下会失效） */
+    if (location.protocol !== 'file:' && window.__PK && window.__PK.files) {
+      delete window.__PK.files['iload.png'];
+    }
+  </script>
+
   <script src="__shim.js"></script>
   <script>
     (function(){
@@ -104,6 +121,15 @@
   <script src="startup-lifecycle.reopenwebgl1.js" charset="utf-8"></script>
   <script>window.__stickmanWebGLLifecycle.installCanvas(document.getElementById('GameCanvas'));</script>
   <script src="src/settings.fixr12.js" charset="utf-8" onerror="window.__gameStartup.fail('配置脚本下载','settings.pickuphud1.js',null,{autoRecover:true})"></script>
+  <script>
+    /* 历史版本：改写 main bundle 的版本号，引擎会去取 config.<ver>.json / index.<ver>.js */
+    (function () {
+      var t = window.__VER_TAG;
+      if (t && t !== 'fixr12' && window._CCSettings && window._CCSettings.bundleVers) {
+        window._CCSettings.bundleVers.main = t;
+      }
+    })();
+  </script>
   <script src="easteregg-runtime.r2.js" charset="utf-8"></script>
   <script src="stickman-fixes.r1.js" charset="utf-8"></script>
   <script src="stickman-fields.r1.js" charset="utf-8"></script>
@@ -156,6 +182,142 @@
       }
     });
   })();
+  </script>
+
+  <!-- 版本切换入口（左上角，默认最新版） -->
+  <div id="__verWrap">
+    <button id="__verBtn" type="button">
+      <span class="__ver-ico">⟳</span>
+      <span id="__verNow">最新版</span>
+      <span class="__ver-caret">▾</span>
+    </button>
+    <div id="__verPanel">
+      <div class="__ver-head">选择游戏版本<span class="__ver-close" id="__verClose">×</span></div>
+      <div class="__ver-list" id="__verList"></div>
+      <div class="__ver-foot" id="__verFoot"></div>
+    </div>
+  </div>
+  <style>
+    #__verWrap{position:fixed;left:10px;top:10px;z-index:999998;
+      font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+    #__verBtn{display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:99px;cursor:pointer;
+      border:2px solid rgba(255,255,255,.28);background:rgba(10,20,40,.62);color:#dce9ff;
+      font-size:12px;font-weight:700;line-height:1;backdrop-filter:blur(6px);
+      transition:opacity .3s ease,border-color .2s,background .2s}
+    #__verBtn:hover{border-color:#7fb6ff;background:rgba(16,32,60,.9);color:#fff}
+    #__verWrap.__idle #__verBtn{opacity:.42}
+    #__verWrap.__idle:hover #__verBtn{opacity:1}
+    .__ver-ico{font-size:13px;color:#8fc3ff}
+    .__ver-caret{font-size:10px;opacity:.75}
+    #__verPanel{position:absolute;left:0;top:calc(100% + 6px);width:286px;max-height:min(66vh,430px);
+      display:none;flex-direction:column;overflow:hidden;border-radius:12px;
+      background:rgba(9,18,36,.97);border:1px solid rgba(120,170,255,.34);
+      box-shadow:0 12px 34px rgba(0,0,0,.55);color:#dfe9ff}
+    #__verPanel.__open{display:flex}
+    .__ver-head{display:flex;align-items:center;justify-content:space-between;
+      padding:10px 12px;font-size:12px;font-weight:800;color:#9fc0f0;
+      border-bottom:1px solid rgba(120,170,255,.18)}
+    .__ver-close{cursor:pointer;font-size:16px;line-height:1;color:#8aa4cc;padding:0 2px}
+    .__ver-close:hover{color:#fff}
+    .__ver-list{overflow-y:auto;padding:4px}
+    .__ver-item{display:flex;align-items:baseline;gap:8px;padding:7px 9px;border-radius:8px;cursor:pointer}
+    .__ver-item:hover{background:rgba(90,140,220,.2)}
+    .__ver-item.__cur{background:rgba(90,150,255,.26);box-shadow:inset 0 0 0 1px rgba(140,190,255,.45)}
+    .__ver-item.__dis{cursor:not-allowed;opacity:.34}
+    .__ver-item.__dis:hover{background:none}
+    .__ver-tag{font-size:12px;font-weight:700;color:#eaf2ff;min-width:118px}
+    .__ver-date{font-size:10px;color:#7d96bd;font-variant-numeric:tabular-nums}
+    .__ver-note{font-size:10px;color:#93a8c9;margin-left:auto;text-align:right;max-width:96px;
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .__ver-badge{font-size:9px;padding:1px 5px;border-radius:4px;background:#2f7dff;color:#fff;font-weight:800}
+    .__ver-foot{padding:8px 12px;font-size:10px;line-height:1.6;color:#7d96bd;
+      border-top:1px solid rgba(120,170,255,.18);background:rgba(0,0,0,.22)}
+  </style>
+  <script>
+    (function () {
+      var VERS = [
+        ['fixr12', '11-25', '最新版'],
+        ['fixr11', '11-25', '无限火力'],
+        ['fixr10', '11-25', '命运魔方'],
+        ['fixr9', '11-18', '跳跃/减速调整'],
+        ['fixr8', '11-10', '拾荒者·铁头'],
+        ['fixr7', '11-10', '修复7'],
+        ['fixr6', '11-10', '修复6'],
+        ['originalnamesr1', '09-22', '定名版'],
+        ['restorenameshpr1', '09-22', '名称还原'],
+        ['featherhpr1', '09-21', '轻羽HP'],
+        ['memenamesr1', '09-21', '梗名被动'],
+        ['gravityfixr1', '09-21', '重力修正'],
+        ['pickuphud1', '09-21', '拾取提示'],
+        ['flow8r1', '09-21', '道具8秒'],
+        ['renderperfr3', '09-21', '渲染性能'],
+        ['combatperfr2', '09-21', '战斗性能2'],
+        ['combatperfr1', '09-21', '战斗性能1'],
+        ['weaponstealhotfixr3', '09-21', '武器盗取修复3'],
+        ['weaponstealhotfixr2', '09-21', '武器盗取修复2'],
+        ['weaponstealhotfixr1', '09-21', '武器盗取修复1'],
+        ['guidesummon1', '09-21', '道具图鉴'],
+        ['anchorcontract1', '09-20', '禁咒契约'],
+        ['singlehard1', '09-20', '单人困难'],
+        ['itemcount1', '09-20', '道具数量'],
+        ['selectedart1fix1', '09-20', '选人美术修复'],
+        ['selectedart1', '09-20', '选人美术'],
+        ['bal2', '09-20', '平衡 v2'],
+        ['bal1', '09-20', '平衡 v1'],
+        ['i25basic1', '09-19', '基础配置'],
+        ['000b4', '06-16', '基线版']
+      ];
+
+      var cur = window.__VER_TAG || 'fixr12';
+      var isFile = location.protocol === 'file:';
+      var wrap = document.getElementById('__verWrap');
+      var btn = document.getElementById('__verBtn');
+      var panel = document.getElementById('__verPanel');
+      var list = document.getElementById('__verList');
+      var label = document.getElementById('__verNow');
+      var foot = document.getElementById('__verFoot');
+
+      function pretty(t) { return t === 'fixr12' ? '最新版' : t; }
+      label.textContent = pretty(cur);
+
+      for (var i = 0; i < VERS.length; i++) {
+        (function (v) {
+          var tag = v[0], date = v[1], note = v[2];
+          var row = document.createElement('div');
+          row.className = '__ver-item' + (tag === cur ? ' __cur' : '');
+          if (isFile && tag !== cur) row.className += ' __dis';
+          row.innerHTML = '<span class="__ver-tag">' + tag + '</span>' +
+            '<span class="__ver-date">' + date + '</span>' +
+            (tag === 'fixr12' ? '<span class="__ver-badge">最新</span>' : '') +
+            '<span class="__ver-note">' + note + '</span>';
+          row.onclick = function () {
+            if (isFile && tag !== cur) return;
+            if (tag === cur) { close(); return; }
+            var q = '?v=' + encodeURIComponent(tag);
+            location.href = location.pathname + q;
+          };
+          list.appendChild(row);
+        })(VERS[i]);
+      }
+
+      foot.textContent = isFile
+        ? '当前为本地离线版，仅内置最新版；切换历史版本请访问在线站点。'
+        : '共 ' + VERS.length + ' 个构建版本，切换后自动重新加载。';
+
+      function open() { panel.classList.add('__open'); wrap.classList.remove('__idle'); }
+      function close() { panel.classList.remove('__open'); idle(); }
+      function idle() { if (panel.classList.contains('__open')) return; wrap.classList.add('__idle'); }
+
+      btn.onclick = function (e) {
+        e.stopPropagation();
+        if (panel.classList.contains('__open')) close(); else open();
+      };
+      document.getElementById('__verClose').onclick = function (e) { e.stopPropagation(); close(); };
+      document.addEventListener('click', function (e) {
+        if (!wrap.contains(e.target)) close();
+      });
+      setTimeout(idle, 4000);
+    })();
   </script>
 </body>
 </html>

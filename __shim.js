@@ -161,15 +161,23 @@
     var entry = lookup(this._url);
 
     if (!entry) {
-      // 包里没有 -> 尝试原生（file:// 下多半失败，但保留兼容）
+      // 包里没有 -> 交给原生请求（在线版加载历史版本时走这里）
       try {
         var x = new NativeXHR();
         x.open('GET', fixUrl(this._url), true);
-        if (this.responseType) { try { x.responseType = this.responseType; } catch (e) {} }
+        var want = this.responseType;
+        // json 由本层自己解析：原生在 responseType='json' 时无法读 responseText
+        try { x.responseType = (want && want !== 'json') ? want : ''; } catch (e) {}
         x.onload = function () {
           if (self._aborted) return;
           self.status = x.status; self.statusText = x.statusText;
-          self.response = x.response; self.responseText = x.responseText;
+          if (want === 'json') {
+            try { self.responseText = x.responseText; } catch (e) { self.responseText = ''; }
+            try { self.response = JSON.parse(self.responseText); } catch (e) { self.response = null; }
+          } else {
+            self.response = x.response;
+            try { self.responseText = x.responseText; } catch (e) { self.responseText = ''; }
+          }
           try { self._mime = x.getResponseHeader('content-type') || ''; } catch (e) {}
           self._setReady(4);
           self._emit('load'); self._emit('loadend');
