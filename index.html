@@ -70,14 +70,37 @@
   </div>
 
   <!-- ① 内联资源包（JSON / 图片 / 音频）-->
+  <!-- 单个包下载失败时原地重试，最多 3 次；避免一次握手抖动就整页报废 -->
   <script src="pack/__manifest.js"></script>
   <script>
-    // 用 document.write 同步插入，保证分片按顺序执行
     (function () {
-      var list = window.__PK_MANIFEST || [];
-      for (var i = 0; i < list.length; i++) {
-        document.write('<script src="pack/' + list[i] + '"><\/script>');
+      var list = window.__PK_MANIFEST || ['pack-00.js', 'pack-01.js'];
+      var tries = {}, MAX = 3;
+
+      function write(name, n) {
+        var src = 'pack/' + name + (n ? '?r=' + n : '');
+        var err = ' onerror="window.__PK_RETRY(\'' + name + '\')"';
+        if (document.readyState === 'loading') {
+          document.write('<script src="' + src + '"' + err + '><\/script>');
+        } else {
+          var s = document.createElement('script');
+          s.src = src;
+          s.onerror = function () { window.__PK_RETRY(name); };
+          document.head.appendChild(s);
+        }
       }
+
+      window.__PK_RETRY = function (name) {
+        tries[name] = (tries[name] || 0) + 1;
+        if (tries[name] > MAX) {
+          console.warn('[PK] 资源包 ' + name + ' 重试 ' + MAX + ' 次仍失败');
+          return;
+        }
+        console.warn('[PK] 重试资源包 ' + name + ' (' + tries[name] + '/' + MAX + ')');
+        write(name, tries[name]);
+      };
+
+      for (var i = 0; i < list.length; i++) write(list[i], 0);
     })();
   </script>
 
@@ -144,7 +167,8 @@
     var splash = document.getElementById('splash');
     splash.style.display = 'block';
 
-    function loadScript (moduleName, cb) {
+    function loadScript (moduleName, cb, attempt) {
+      attempt = attempt || 0;
       function scriptLoaded () {
         document.body.removeChild(domScript);
         domScript.removeEventListener('load', scriptLoaded, false);
@@ -152,8 +176,13 @@
       }
       var domScript = document.createElement('script');
       domScript.async = true;
-      domScript.src = moduleName + '?v=offline';
+      domScript.src = moduleName + '?v=offline' + (attempt ? '&r=' + attempt : '');
       domScript.addEventListener('error', function () {
+        if (attempt < 2) {
+          console.warn('[BOOT] 重试引擎脚本 ' + moduleName + ' (' + (attempt + 1) + '/2)');
+          setTimeout(function () { loadScript(moduleName, cb, attempt + 1); }, 500);
+          return;
+        }
         window.__gameStartup.fail('引擎脚本下载', moduleName, null, {autoRecover:true});
       });
       domScript.addEventListener('load', scriptLoaded, false);

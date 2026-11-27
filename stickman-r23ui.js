@@ -120,7 +120,7 @@
     tj.style.cssText="position:fixed;inset:0;z-index:100060;background:rgba(0,0,0,.39);display:flex;align-items:center;justify-content:center";
     var box=document.createElement("div");
     box.style.cssText="position:relative;width:min(1100px,96vw);height:94vh;background:#2564aa;border:4px solid #1a4f8c;border-radius:18px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.4)";
-    var fr=document.createElement("iframe"); fr.src="tujian.html?embed=1"; fr.title="图鉴";
+    var fr=document.createElement("iframe"); fr.src="tujian"+(window.__HTM_EXT||".html")+"?embed=1"; fr.title="图鉴";
     fr.style.cssText="position:absolute;inset:0;width:100%;height:100%;border:0;background:#f6f7fb";
     var x=document.createElement("div"); x.textContent="✕";
     x.style.cssText="position:absolute;left:10px;top:8px;z-index:2;width:44px;height:44px;border-radius:9px;background:linear-gradient(#b4b9c2,#8a909b);border:3px solid #4a4f58;color:#fff;font:900 26px/38px system-ui,sans-serif;text-align:center;cursor:pointer;box-shadow:0 3px 0 #4a4f58;user-select:none";
