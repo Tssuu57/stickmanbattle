@@ -102,7 +102,7 @@
        站点默认：GitHub Pages 上默认走 Netlify（避开握手抖动）；
                  其它站点走自身相对路径。
        当前站点就是所选源时用相对路径，不产生跨域请求。
-       调试：?src=local 强制本站，?src=netlify 强制 Netlify。 */
+       调试：?src=local 强制本站，?src=gh / ?src=netlify 强制指定源（仅本次，不写记忆）。 */
     window.__SRC = (function () {
       var SRC = {
         gh: 'https://tssuu57.github.io/stickmanbattle/',
@@ -315,19 +315,25 @@
 
   <!-- 加载过慢提示（不遮挡游戏） -->
   <div id="__slowTip">
-    <span id="__slowTxt">加载较慢，仍在进行中…</span>
-    <button id="__slowAlt">换个源</button>
-    <button id="__slowRetry">重新加载</button>
+    <span id="__slowTxt">加载较慢…</span>
+    <span class="__st-btns">
+      <button id="__slowAlt">换个源</button>
+      <button id="__slowRetry">重新加载</button>
+    </span>
   </div>
   <style>
     #__slowTip{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:999999;
-      display:none;align-items:center;gap:10px;padding:8px 10px 8px 14px;border-radius:99px;
+      display:none;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;
+      max-width:calc(100vw - 16px);box-sizing:border-box;
+      padding:8px 10px 8px 14px;border-radius:22px;
       background:rgba(8,18,36,.92);border:1px solid rgba(120,170,255,.4);
-      color:#cfe0fa;font-size:12px;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.5);
+      color:#cfe0fa;font-size:12px;box-shadow:0 8px 24px rgba(0,0,0,.5);
       font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
     #__slowTip.__on{display:flex}
+    #__slowTxt{white-space:nowrap}
+    .__st-btns{display:flex;gap:8px}
     #__slowTip button{padding:5px 12px;border-radius:99px;cursor:pointer;font-size:12px;
-      font-weight:700;border:1px solid rgba(140,190,255,.45);
+      font-weight:700;border:1px solid rgba(140,190,255,.45);white-space:nowrap;
       background:rgba(47,125,255,.85);color:#fff}
   </style>
   <script>
@@ -344,7 +350,7 @@
       if (!cur || !window.__SRC || !window.__SRC.srcs[other]) {
         alt.style.display = 'none';
       } else {
-        alt.textContent = '换成 ' + window.__SRC.name[other];
+        alt.textContent = '换 ' + window.__SRC.name[other];
         alt.onclick = function () {
           txt.textContent = '正在切换到 ' + window.__SRC.name[other] + '…';
           window.__SRC.use(other);
@@ -367,8 +373,8 @@
         var el = Date.now() - t0;
         if (el > 10000) {
           txt.textContent = el > 40000
-            ? '加载仍未完成，建议换个下载源'
-            : '加载较慢，仍在进行中…';
+            ? '还没加载完，换个源'
+            : '加载较慢…';
           tip.classList.add('__on');
         }
       }, 800);
