@@ -123,7 +123,7 @@
       var saved = '';
       try { saved = localStorage.getItem(KEY) || ''; } catch (e) {}
       var pick = m ? m[1] : saved;
-      /* 旧记忆里可能残留 netlify，这里会落到站点默认分支 */
+      /* 旧记忆里可能残留已下线的源，这里会落到站点默认分支 */
       if (pick !== 'gh' && pick !== 'bos' && pick !== 'local') {
         pick = (here === 'gh') ? 'bos' : (here || 'local');
       }
