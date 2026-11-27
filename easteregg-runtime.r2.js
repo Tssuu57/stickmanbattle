@@ -1,10 +1,19 @@
 ;(function(){
   'use strict';
   var E=window.__stickmanEgg={
-    version:'start-easteregg-r2', probability:0.05, round:0, active:null,
+    version:'start-easteregg-r3', probability:0, round:0, active:null,
     names:['otto','frog'], textures:Object.create(null), frames:Object.create(null),
     preloadDone:false, preloadFailed:false, generation:0
   };
+  // 默认关闭。想临时开启：?egg=1（100%）；?egg=0.05（5%，原彩蛋概率）
+  try{
+    var em=/(?:[?&])egg=([^&#]*)/.exec(location.search||'');
+    if(em&&em[1]!==''){
+      var ev=parseFloat(em[1]);
+      if(!isNaN(ev))E.probability=Math.max(0,Math.min(1,ev));
+      else if(/^(on|yes|true)$/i.test(em[1]))E.probability=1;
+    }
+  }catch(_){}
   var paths={otto:'/easteregg-otto-cutout.png',frog:'/easteregg-frog-cutout.png'};
   function log(msg){try{console.log('[EGG] '+msg);}catch(_){} }
   function nodeOk(n){return !!(n&&n.isValid&&n.activeInHierarchy);}
@@ -36,7 +45,7 @@
   function preload(name){
     var img=new Image(); img.decoding='async'; img.onload=function(){finishImage(name,img,0);}; img.onerror=function(){E.preloadFailed=true;log('skip '+name);}; img.src=paths[name];
   }
-  preload('otto');preload('frog');
+  if(E.probability>0){preload('otto');preload('frog');}
   function spriteFor(human){
     if(!nodeOk(human))return null;
     var head=human.getChildByName&&human.getChildByName('head');
