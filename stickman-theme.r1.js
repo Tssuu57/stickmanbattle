@@ -74,10 +74,14 @@
     corner_wall_space: "corner_wall_forest"
   };
 
+  // 这些贴图交给 stickman-sub.r1.js 处理，避免两个脚本互相覆盖
+  var SKIP = { attackBack: 1 };
+
   function applySprite(sp) {
     var sf = sp.spriteFrame;
     if (!sf) return;
     var nm = sf.name || sf._name;
+    if (nm && SKIP[nm]) return;
     if (nm && !IMG[nm] && ALIAS[nm]) nm = ALIAS[nm];
     if (!nm || !IMG[nm]) return;
     if (NEWF[nm] && sp.spriteFrame === NEWF[nm]) return;
