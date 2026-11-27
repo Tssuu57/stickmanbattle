@@ -71,6 +71,17 @@
 
   <!-- ① 内联资源包（JSON / 图片 / 音频）-->
   <!-- 单个包下载失败时原地重试，最多 3 次；避免一次握手抖动就整页报废 -->
+  <script>
+    /* Netlify 资源加速：在 GitHub Pages 上把大文件（pack / 引擎）改从 Netlify 拉取，
+       其余环境（Netlify 自己 / 本地 http / file://）保持相对路径。
+       调试开关：?cdn=0 强制本地，?cdn=1 强制走 Netlify。 */
+    window.__ASSET_HOST = (function () {
+      var q = location.search || '';
+      if (/[?&]cdn=0(&|$)/.test(q)) return '';
+      if (/[?&]cdn=1(&|$)/.test(q)) return 'https://stickmanbattle-cn.netlify.app/';
+      return /(^|\.)github\.io$/i.test(location.hostname || '') ? 'https://stickmanbattle-cn.netlify.app/' : '';
+    })();
+  </script>
   <script src="pack/__manifest.js"></script>
   <script>
     (function () {
@@ -78,7 +89,9 @@
       var tries = {}, MAX = 3;
 
       function write(name, n) {
-        var src = 'pack/' + name + (n ? '?r=' + n : '');
+        // 前 MAX 次走 CDN，最后一次重试回源到 GitHub 自身
+        var base = (n >= MAX ? '' : (window.__ASSET_HOST || ''));
+        var src = base + 'pack/' + name + (n ? '?r=' + n : '');
         var err = ' onerror="window.__PK_RETRY(\'' + name + '\')"';
         if (document.readyState === 'loading') {
           document.write('<script src="' + src + '"' + err + '><\/script>');
@@ -176,7 +189,9 @@
       }
       var domScript = document.createElement('script');
       domScript.async = true;
-      domScript.src = moduleName + '?v=offline' + (attempt ? '&r=' + attempt : '');
+      // 前两次走 CDN（GitHub Pages 环境下生效），最后一次回源
+      var host = (attempt >= 2 ? '' : (window.__ASSET_HOST || ''));
+      domScript.src = host + moduleName + '?v=offline' + (attempt ? '&r=' + attempt : '');
       domScript.addEventListener('error', function () {
         if (attempt < 2) {
           console.warn('[BOOT] 重试引擎脚本 ' + moduleName + ' (' + (attempt + 1) + '/2)');
