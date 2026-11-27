@@ -87,7 +87,23 @@
       "background:#FAF6E7!important;border:1px solid #BCB196!important;color:#3E4A42!important;",
       "box-shadow:0 1px 2px rgba(60,66,58,.10)!important;border-radius:3px!important;",
       "font-size:15px!important;font-weight:600!important;letter-spacing:3px!important;",
-      "width:92px!important;height:36px!important;padding:0!important;line-height:34px!important;}"
+      "width:92px!important;height:36px!important;padding:0!important;line-height:34px!important;}",
+      /* 战斗 HUD 浮层和风化：深蓝黑底 → 纸白底 + 墨绿字 */
+      ".hud2bar{background:rgba(250,247,236,.72)!important;border-color:rgba(46,58,52,.58)!important;",
+      "box-shadow:0 1px 3px rgba(46,58,52,.16)!important}",
+      ".hud2chip{background:rgba(250,247,236,.86)!important;border-color:rgba(46,58,52,.28)!important;",
+      "color:#7A3A30!important;box-shadow:0 1px 2px rgba(46,58,52,.10)!important}",
+      ".hud2desc{background:rgba(250,247,236,.90)!important;color:#2E3A34!important;",
+      "box-shadow:0 1px 3px rgba(46,58,52,.14)!important}",
+      ".hud2fdesc{background:rgba(250,247,236,.90)!important;color:#7A3A30!important;",
+      "box-shadow:0 1px 3px rgba(46,58,52,.14)!important}",
+      ".hud2field{background:rgba(250,247,236,.92)!important;border-color:#C05A4A!important;",
+      "color:#7A3A30!important;box-shadow:0 1px 3px rgba(46,58,52,.14)!important}",
+      "div[aria-live=polite][style*='top: 14%']>div{background:rgba(250,247,236,.94)!important;",
+      "border-color:#B0846A!important;color:#2E3A34!important;",
+      "box-shadow:0 2px 10px rgba(46,58,52,.16)!important}",
+      "div[aria-live=polite][style*='top: 14%']>div *{color:#2E3A34!important}",
+      "div[aria-live=polite][style*='top: 14%']>div b,div[aria-live=polite][style*='top: 14%']>div strong{color:#8E3F33!important}"
     ].join("");
     document.head.appendChild(st);
   }
