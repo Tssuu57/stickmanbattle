@@ -2,14 +2,11 @@
 // 1. 每个人一列：Passive / Weapon / Skin / Color，按钮不再压住「Player 1/2」，P2 的 Passive 和 P2 的 Weapon 对齐
 // 2. 中间放「场地」「图鉴」两个原版样式按钮，左上角的 DOM 按钮和顶部 GUIDE 在选择界面里藏起来
 // 3. 被动面板直接用原版武器面板（WeaponsView / WeaponsView2）做底：同样的背景、透明度、X 的位置、格子
-// 4. 原版武器面板里加上 meme 武器，可以自选（只管开局那一把）
-// 5. 图鉴在游戏里打开（全屏浮层），不跳走
+// 4. 图鉴在游戏里打开（全屏浮层），不跳走
 (function(){
   var PI=null; // 被动的中文名和说明
   function loadPI(){ fetch("/assets/passive_item_data.originalnamesr1.json?v=r23g").then(function(r){return r.json();}).then(function(d){ PI={}; (d.passives||[]).forEach(function(p){ PI[p.id]=p; }); }).catch(function(){ setTimeout(loadPI,3000); }); }
   loadPI();
-  function R(){ return window.__r23||{}; }
-  function save(){ try{ localStorage.setItem("r23.forced",JSON.stringify(R().forced||{})); }catch(e){} }
   var cellSF=null; // 原版格子底图 cell_weapon
 
   // ---------- 原版样式的按钮 ----------
@@ -48,27 +45,7 @@
     }
     var fb=ui2&&ui2.getChildByName("r23Field");
     if(fb){ var F=window.__fields, q=F&&F.queue?F.queue().filter(function(x){return x!=="random";}):[], t=q.length?"场地 ("+q.length+")":"场地"; if(fb.__lbl!==t){ fb.__lbl=t; relabel(fb,t); } }
-    tickPreview(C,1); tickPreview(C,2);
   }
-  // 选了 meme 武器：选择界面下面那格也显示它
-  function tickPreview(C,n){
-    var box=C["Player"+n+"Weapon"]; if(!box||!box.isValid)return;
-    var nameN=box.parent&&box.parent.getChildByName("WeaponsName"), lb=nameN&&nameN.getComponentInChildren(cc.Label);
-    var id=(R().forced||{})["p"+n], sf=id&&R().WSF&&R().WSF[id], ov=box.getChildByName("r23sel");
-    if(sf){
-      if(!ov){ ov=new cc.Node("r23sel"); ov.parent=box; var bgs=ov.addComponent(cc.Sprite); bgs.sizeMode=cc.Sprite.SizeMode.CUSTOM; if(cellSF)bgs.spriteFrame=cellSF; ov.setContentSize(170,170);
-        var ic=new cc.Node("i"); ic.parent=ov; ic.addComponent(cc.Sprite).sizeMode=cc.Sprite.SizeMode.CUSTOM; }
-      var ics=ov.getChildByName("i").getComponent(cc.Sprite); if(ics.spriteFrame!==sf){ ics.spriteFrame=sf; fit(ics.node,sf,130); }
-      if(!ov.getComponent(cc.Sprite).spriteFrame&&cellSF)ov.getComponent(cc.Sprite).spriteFrame=cellSF;
-      ov.active=true;
-      if(lb){ var nm=wname(id); if(lb.string!==nm){ if(!lb.__r23o||lb.string!==lb.__r23m)lb.__r23o=lb.string; lb.string=nm; lb.__r23m=nm; } }
-    }else{
-      if(ov)ov.active=false;
-      if(lb&&lb.__r23m&&lb.string===lb.__r23m){ lb.string=lb.__r23o||"???"; lb.__r23m=null; }
-    }
-  }
-  function wname(id){ var L=R().WL||[]; for(var i=0;i<L.length;i++)if(L[i][0]===id)return L[i][1]; return id; }
-  function fit(node,sf,max){ var s=sf.getOriginalSize(), k=Math.min(max/s.width,max/s.height); node.setContentSize(s.width*k,s.height*k); }
 
   // ---------- 金色选中框 ----------
   function mark(tile,on){
@@ -134,29 +111,6 @@
     var lay=ct.getComponent(cc.Layout); if(lay)lay.updateLayout();
   }
 
-  // ---------- 原版武器面板里加 meme 武器 ----------
-  function tickWeaponsView(){
-    var cv=cc.find("Canvas"); if(!cv)return;
-    cv.children.forEach(function(v){
-      if(!v.active||v.__r23pas||(v.name!=="WeaponsView"&&v.name!=="WeaponsView2"))return;
-      var n=v.name==="WeaponsView2"?2:1, key="p"+n, ct=contentOf(v); if(!ct||!ct.children.length)return;
-      grabCell(ct);
-      var F=R().forced, WSF=R().WSF||{}, WL=R().WL||[];
-      if(!F)return;
-      ct.children.forEach(function(c){ if(c.__r23n||c.name.indexOf("r23m_")===0)return; c.__r23n=true; c.on(cc.Node.EventType.TOUCH_END,function(){ F[key]=null; save(); }); });
-      WL.forEach(function(it){
-        var id=it[0]; if(!WSF[id])return;
-        var t=ct.getChildByName("r23m_"+id);
-        if(!t){
-          t=tile("r23m_"+id,function(){ F[key]=F[key]===id?null:id; save(); });
-          var ic=new cc.Node("icon"); ic.parent=t; var s=ic.addComponent(cc.Sprite); s.sizeMode=cc.Sprite.SizeMode.CUSTOM; s.spriteFrame=WSF[id]; fit(ic,WSF[id],132);
-          t.parent=ct; var lay=ct.getComponent(cc.Layout); if(lay)lay.updateLayout();
-        }
-        mark(t,F[key]===id);
-      });
-    });
-  }
-
   // ---------- 图鉴浮层 ----------
   var tj=null;
   function closeTujian(){ if(tj&&tj.parentNode)tj.parentNode.removeChild(tj); tj=null; }
@@ -180,6 +134,6 @@
   document.addEventListener("keydown",function(e){ if(e.key==="Escape")closeTujian(); });
 
   setInterval(function(){
-    try{ if(typeof cc==="undefined"||!cc.director||!cc.director.getScene())return; tickChoose(); tickWeaponsView(); }catch(e){ if(!window.__r23uiErr){ window.__r23uiErr=1; console.log("[r23ui]",e&&e.message); } }
+    try{ if(typeof cc==="undefined"||!cc.director||!cc.director.getScene())return; tickChoose(); }catch(e){ if(!window.__r23uiErr){ window.__r23uiErr=1; console.log("[r23ui]",e&&e.message); } }
   },250);
 })();

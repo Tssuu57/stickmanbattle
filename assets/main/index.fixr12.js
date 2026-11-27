@@ -1940,11 +1940,6 @@ setInterval(window.__updateItemPanel,250);
       window._up.userProfile.data.isPassTutorial=true;
       window._up.userProfile.data.isPass1PlayerTutorial=true;
       window._up.userProfile.data.isPass2PlayersTutorial=true;
-      // 钥匙：如果为 0 则补到 888
-      if(!window._up.userProfile.data.keys||window._up.userProfile.data.keys<1){
-        window._up.userProfile.data.keys=888;
-        console.log("[FIX] Keys=0, restored to 888");
-      }
       window._up.userProfile.save();
       clearInterval(checkTut);
       console.log("[FIX] All tutorials skipped");
@@ -1981,16 +1976,6 @@ setInterval(window.__updateItemPanel,250);
       clearInterval(titleCheck);
     }
   },500);
-  // 持续检查 keys：每次回到主菜单时如果为 0 也补 888
-  setInterval(function(){
-    if(window._up&&window._up.userProfile&&window._up.userProfile.data){
-      if(window._up.userProfile.data.keys<1){
-        window._up.userProfile.data.keys=888;
-        window._up.userProfile.save();
-        console.log("[FIX] Keys refilled to 888");
-      }
-    }
-  },5000);
 })();
 console.log("[CMD] 道具命令已注册!");
 console.log("[CMD] 用法: giveItem(state) 或 gi(state)");

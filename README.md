@@ -96,6 +96,12 @@ npx serve .
 
 调试开关：`?endfix=0` 关闭本段；控制台 `__endFreeze.report()` 查看状态。
 
+## 内容清理层
+
+- `stickman-skins.r1.js`：皮肤面板移除 `Skin_0`~`Skin_8` 的真人照片与表情包，老存档 / 对手随机皮肤命中时回退到 `Skin_9`。
+- meme 武器（反转卡、BONK 球棒、Stonks、橡皮鸡、彩虹吐司、贱笑锤、诺基亚）：连同 `stickman-r23.js`、武器面板入口、图标资源与包内数据一并删除，仅保留原版 40 把武器。
+- `stickman-nomoney.r1.js`：移除金币 / 钥匙经济。顶部余额、宝箱、钥匙门禁、结算金币与看广告翻倍全部下线；结算只保留一个 `OK`；开箱、竞技场与武器 / 皮肤的 300 金币校验均被绕过；`gold` / `keys` 恒为 0 且不写入存档；武器与皮肤保持全解锁。开关：`?money=0` 关闭；控制台 `__noMoney.report()` 查看状态。
+
 ## 技术说明
 
 浏览器的 `file://` 协议有三重限制：XHR 读本地 JSON 被 CORS 拦截、`fetch` 不支持 file scheme、本地图片作为 WebGL 纹理被判为跨源污染。
