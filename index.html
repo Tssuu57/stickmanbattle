@@ -86,6 +86,13 @@
     #__bootErr h3{font-size:20px;color:#ff8a8a}
     #__bootErr p{font-size:14px;line-height:1.8;color:#c9d8f5;max-width:620px}
     #__bootErr code{background:rgba(0,0,0,.4);padding:2px 7px;border-radius:5px;color:#9fe0ff}
+    #__bootErr .__be-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+    #__bootErr button{appearance:none;-webkit-appearance:none;border:1px solid rgba(140,190,255,.5);
+      cursor:pointer;font:inherit;font-size:14px;font-weight:700;color:#fff;
+      background:rgba(47,125,255,.9);padding:10px 20px;border-radius:99px}
+    #__bootErr button#__beAlt{background:linear-gradient(90deg,#ffb347,#ff6a3d);color:#23140a;
+      border-color:rgba(255,170,90,.7)}
+    #__bootErr button:disabled{opacity:.6;cursor:default}
   </style>
 
   <canvas id="GameCanvas" oncontextmenu="event.preventDefault()" tabindex="0"></canvas>
@@ -229,20 +236,70 @@
 
   <script src="__shim.js"></script>
   <script>
-    (function(){
+    (function () {
       var tip = document.getElementById('__bootTip');
+      var list = window.__PK_MANIFEST || ['pack-00.js', 'pack-01.js'];
+      var pk = window.__PK;
+      var files = (pk && pk.files) || {};
+      var total = 0, k;
+      for (k in files) { if (Object.prototype.hasOwnProperty.call(files, k)) total++; }
+
+      /* 完整性判定：新包每个都会把 parts 加 1；老包没有这个计数，
+         退回"资源条数下限"粗判（当前全量 448 条）。两者取大，兼容新旧混用。 */
+      var byParts = (pk && typeof pk.parts === 'number') ? pk.parts : -1;
+      var byCount = total >= 400 ? list.length : 0;
+      var got = Math.max(byParts, byCount);
+      var complete = total > 0 && got >= list.length;
+
+      function otherSource() {
+        var s = window.__SRC;
+        if (!s) return '';
+        var cur = s.pick;
+        if (cur === 'local' && s.here) cur = s.here;
+        var fb = s.fallback || ['bos', 'gh'];
+        var o = fb[(fb.indexOf(cur) + 1) % fb.length];
+        return (o && s.srcs[o]) ? o : '';
+      }
+
+      function showErr(title, msg) {
+        var e = document.getElementById('__bootErr');
+        if (!e) {
+          e = document.createElement('div');
+          e.id = '__bootErr';
+          document.body.appendChild(e);
+        }
+        var alt = otherSource();
+        e.innerHTML = '<h3>' + title + '</h3><p>' + msg + '</p>' +
+          '<div class="__be-row">' +
+          (alt ? '<button id="__beAlt">换 ' + window.__SRC.name[alt] + ' 重试</button>' : '') +
+          '<button id="__beRetry">重新加载</button></div>';
+        e.style.display = 'flex';
+        var r = document.getElementById('__beRetry');
+        if (r) r.onclick = function () { location.reload(); };
+        var a = document.getElementById('__beAlt');
+        if (a) a.onclick = function () {
+          a.disabled = true;
+          a.textContent = '正在切换…';
+          window.__SRC.use(alt);
+        };
+      }
+
+      if (!complete) {
+        /* 关键：资源缺一块时不要让游戏带着半个包启动（会黑屏且无提示）。
+           保留加载页，用错误层覆盖，并拦住后面的启动脚本。 */
+        window.__PK_BROKEN = true;
+        var detail = (pk && typeof pk.parts === 'number')
+          ? ('只加载到 ' + Math.max(got, 0) + '/' + list.length + ' 个资源包')
+          : ('只解析到 ' + total + ' 条资源');
+        showErr('资源包没有加载完整',
+          detail + '，多半是网络中断或所选下载源暂时不可用。<br>' +
+          '换个源可以从头重下，已经缓存的脚本不会重复下载。');
+        return;
+      }
+
       if (tip) {
         tip.classList.add('__hide');
-        setTimeout(function(){ if (tip.parentNode) tip.parentNode.removeChild(tip); }, 400);
-      }
-      if (!window.__PK || !window.__PK.files) {
-        var e = document.createElement('div');
-        e.id = '__bootErr';
-        e.style.display = 'flex';
-        e.innerHTML = '<h3>资源包没有加载成功</h3>' +
-          '<p>请确认 <code>pack</code> 文件夹里的 <code>pack-00.js ~ pack-04.js</code> 与 ' +
-          '<code>开始游戏.html</code> 在同一个目录下，不要单独移动 HTML 文件。</p>';
-        document.body.appendChild(e);
+        setTimeout(function () { if (tip.parentNode) tip.parentNode.removeChild(tip); }, 400);
       }
     })();
   </script>
@@ -269,6 +326,8 @@
 
   <script type="text/javascript">
   (function () {
+    /* 资源包不完整时由前面的校验层接管；这里直接退出，避免再弹一个错误页 */
+    if (window.__PK_BROKEN) return;
     if (typeof VConsole !== 'undefined') {
       window.vConsole = new VConsole();
     }
@@ -284,25 +343,51 @@
 
     function loadScript (moduleName, cb, attempt) {
       attempt = attempt || 0;
-      function scriptLoaded () {
-        document.body.removeChild(domScript);
+      var domScript = document.createElement('script');
+      var settled = false;
+      var timer = 0;
+
+      function cleanup () {
+        if (timer) { clearTimeout(timer); timer = 0; }
         domScript.removeEventListener('load', scriptLoaded, false);
+        domScript.removeEventListener('error', onError, false);
+        if (domScript.parentNode) {
+          try { domScript.parentNode.removeChild(domScript); } catch (e) { /* 忽略 */ }
+        }
+      }
+      function retry (why) {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        if (attempt < 2) {
+          console.warn('[BOOT] 重试引擎脚本 ' + moduleName + ' (' + (attempt + 1) + '/2, ' + why + ')');
+          setTimeout(function () { loadScript(moduleName, cb, attempt + 1); }, 500);
+          return;
+        }
+        var detail = moduleName + '（' + why + '）';
+        if (window.__gameStartup && typeof window.__gameStartup.fail === 'function') {
+          window.__gameStartup.fail('引擎脚本下载', detail, null, {autoRecover:true});
+        } else {
+          console.error('[BOOT] 引擎脚本失败', detail);
+        }
+      }
+      function scriptLoaded () {
+        if (settled) return;
+        settled = true;
+        cleanup();
         cb && cb();
       }
-      var domScript = document.createElement('script');
+      function onError () { retry('加载失败'); }
+
       domScript.async = true;
       // 前两次走 CDN（GitHub Pages 环境下生效），最后一次回源
       var host = (attempt >= 2 ? '' : (window.__ASSET_HOST || ''));
       domScript.src = host + moduleName + '?v=offline' + (attempt ? '&r=' + attempt : '');
-      domScript.addEventListener('error', function () {
-        if (attempt < 2) {
-          console.warn('[BOOT] 重试引擎脚本 ' + moduleName + ' (' + (attempt + 1) + '/2)');
-          setTimeout(function () { loadScript(moduleName, cb, attempt + 1); }, 500);
-          return;
-        }
-        window.__gameStartup.fail('引擎脚本下载', moduleName, null, {autoRecover:true});
-      });
+      domScript.addEventListener('error', onError, false);
       domScript.addEventListener('load', scriptLoaded, false);
+      /* 兜底超时：个别浏览器对跨域脚本既不触发 load 也不触发 error，
+         没有这个定时器页面会永远停在加载页 */
+      timer = setTimeout(function () { retry('超时 18s'); }, 18000);
       document.body.appendChild(domScript);
     }
 
