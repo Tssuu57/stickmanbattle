@@ -33,7 +33,15 @@
     <div class="__bt-title">Stickman Battle</div>
     <div class="__bt-sub">正在加载离线资源…</div>
     <div class="__bt-bar"><i></i></div>
-    <div class="__bt-hint">首次打开需要几秒，请稍候</div>
+    <div class="__bt-hint" id="__btHint">首次打开需要几秒，请稍候</div>
+
+    <!-- 下载源选择：GitHub Pages / Netlify -->
+    <div class="__bt-src" id="__btSrc" hidden>
+      <span class="__bt-src-cap">下载源</span>
+      <button type="button" class="__bt-src-btn" data-src="gh">GitHub Pages</button>
+      <button type="button" class="__bt-src-btn" data-src="netlify">Netlify</button>
+    </div>
+    <div class="__bt-src-tip" id="__btSrcTip" hidden>选中后自动重新加载</div>
   </div>
   <style>
     #__bootTip{
@@ -51,6 +59,22 @@
       background:linear-gradient(90deg,#ffb347,#ff6a3d);animation:__btslide 1.15s ease-in-out infinite}
     @keyframes __btslide{0%{transform:translateX(-100%)}100%{transform:translateX(420%)}}
     .__bt-hint{font-size:12px;color:#7e97c4}
+    .__bt-src{display:flex;align-items:center;gap:6px;margin-top:10px;padding:5px 6px;
+      border-radius:99px;background:rgba(255,255,255,.07);border:1px solid rgba(150,190,255,.22);
+      transition:border-color .25s,box-shadow .25s}
+    .__bt-src[hidden]{display:none}
+    .__bt-src-cap{font-size:11px;color:#8fa8d4;padding:0 2px 0 6px;letter-spacing:.5px;white-space:nowrap}
+    .__bt-src-btn{appearance:none;-webkit-appearance:none;border:0;cursor:pointer;font:inherit;
+      flex:0 0 104px;text-align:center;font-size:12px;font-weight:700;line-height:1;color:#c6d8f6;
+      background:rgba(255,255,255,.06);padding:9px 0;border-radius:99px;
+      transition:background .18s,color .18s}
+    .__bt-src-btn:active{transform:scale(.97)}
+    .__bt-src-btn.__on{color:#23140a;background:linear-gradient(90deg,#ffb347,#ff6a3d);
+      box-shadow:0 2px 10px rgba(255,120,60,.35)}
+    .__bt-src-tip{font-size:11px;color:#6d86b3;margin-top:2px}
+    .__bt-src-tip[hidden]{display:none}
+    .__bt-src.__beat{border-color:rgba(255,170,90,.6);animation:__btpulse 1.5s ease-in-out infinite}
+    @keyframes __btpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,150,70,0)}50%{box-shadow:0 0 0 5px rgba(255,150,70,.13)}}
     #__bootErr{
       position:fixed;inset:0;z-index:1000000;display:none;flex-direction:column;
       align-items:center;justify-content:center;gap:12px;padding:28px;text-align:center;
@@ -72,15 +96,88 @@
   <!-- ① 内联资源包（JSON / 图片 / 音频）-->
   <!-- 单个包下载失败时原地重试，最多 3 次；避免一次握手抖动就整页报废 -->
   <script>
-    /* Netlify 资源加速：在 GitHub Pages 上把大文件（pack / 引擎）改从 Netlify 拉取，
-       其余环境（Netlify 自己 / 本地 http / file://）保持相对路径。
-       调试开关：?cdn=0 强制本地，?cdn=1 强制走 Netlify。 */
-    window.__ASSET_HOST = (function () {
-      var q = location.search || '';
-      if (/[?&]cdn=0(&|$)/.test(q)) return '';
-      if (/[?&]cdn=1(&|$)/.test(q)) return 'https://stickmanbattle-cn.netlify.app/';
-      return /(^|\.)github\.io$/i.test(location.hostname || '') ? 'https://stickmanbattle-cn.netlify.app/' : '';
+    /* 下载源选择：GitHub Pages / Netlify
+       ------------------------------------------------------------------
+       生效优先级：?src=gh|netlify|local  >  localStorage 记忆  >  站点默认
+       站点默认：GitHub Pages 上默认走 Netlify（避开握手抖动）；
+                 其它站点走自身相对路径。
+       当前站点就是所选源时用相对路径，不产生跨域请求。
+       调试：?src=local 强制本站，?src=netlify 强制 Netlify。 */
+    window.__SRC = (function () {
+      var SRC = {
+        gh: 'https://tssuu57.github.io/stickmanbattle/',
+        netlify: 'https://stickmanbattle-cn.netlify.app/'
+      };
+      var KEY = 'sb_src_v1';
+      var NAME = { gh: 'GitHub Pages', netlify: 'Netlify' };
+      var host = location.hostname || '';
+      var here = /(^|\.)github\.io$/i.test(host) ? 'gh'
+               : /(^|\.)netlify\.app$/i.test(host) ? 'netlify' : '';
+      var m = /[?&]src=(gh|netlify|local)(?:&|$)/.exec(location.search || '');
+      /* 兼容旧调试参数 */
+      if (!m && /[?&]cdn=0(?:&|$)/.test(location.search || '')) m = ['', 'local'];
+      if (!m && /[?&]cdn=1(?:&|$)/.test(location.search || '')) m = ['', 'netlify'];
+      var saved = '';
+      try { saved = localStorage.getItem(KEY) || ''; } catch (e) {}
+      var pick = m ? m[1] : saved;
+      /* 站点默认：GitHub Pages 上默认走 Netlify（GitHub 握手不稳）；其它站点走自身 */
+      if (pick !== 'gh' && pick !== 'netlify' && pick !== 'local') {
+        pick = (here === 'gh') ? 'netlify' : (here || 'local');
+      }
+
+      var api = {
+        srcs: SRC,
+        here: here,                          // 当前站点所属源（本地为空）
+        pick: pick,                          // gh | netlify | local
+        name: NAME,
+        host: (pick === 'local' || pick === here) ? '' : (SRC[pick] || ''),
+        /* 记录选择并重载，让新源从下一个请求开始生效 */
+        use: function (v) {
+          if (v !== 'gh' && v !== 'netlify') return;
+          try { localStorage.setItem(KEY, v); } catch (e) {}
+          var q = (location.search || '').replace(/^\?/, '').split('&')
+            .filter(function (p) { return p && !/^src=/.test(p); });
+          try {
+            location.replace(location.pathname + (q.length ? '?' + q.join('&') : ''));
+          } catch (e) { location.reload(); }
+        }
+      };
+
+      /* ---- 加载页上的切换器 ---- */
+      var box = document.getElementById('__btSrc');
+      var tip = document.getElementById('__btSrcTip');
+      var hint = document.getElementById('__btHint');
+      if (box) {
+        var shown = (pick === 'local') ? here : pick;   // 高亮"本次实际生效"的源
+        var btns = box.getElementsByTagName('button');
+        for (var i = 0; i < btns.length; i++) {
+          (function (b) {
+            if (b.getAttribute('data-src') === shown) b.className = '__bt-src-btn __on';
+            b.onclick = function () {
+              var v = b.getAttribute('data-src');
+              if (v === shown) { if (tip) tip.textContent = '当前用的就是这个源'; return; }
+              if (tip) tip.textContent = '正在切换到 ' + NAME[v] + '…';
+              b.className = '__bt-src-btn __on';
+              api.use(v);
+            };
+          })(btns[i]);
+        }
+        box.hidden = false;
+        if (tip) {
+          tip.hidden = false;
+          tip.textContent = shown ? ('当前：' + NAME[shown] + '，点另一个可切换') : '选中后自动重新加载';
+        }
+        /* 2.6 秒还没进游戏 → 把切换器点亮，提示可以换源 */
+        setTimeout(function () {
+          var b2 = document.getElementById('__btSrc');
+          if (!b2) return;
+          b2.className = '__bt-src __beat';
+          if (hint) hint.textContent = '加载偏慢？可以换个下载源试试';
+        }, 2600);
+      }
+      return api;
     })();
+    window.__ASSET_HOST = window.__SRC.host;
   </script>
   <script src="pack/__manifest.js"></script>
   <script>
@@ -219,6 +316,7 @@
   <!-- 加载过慢提示（不遮挡游戏） -->
   <div id="__slowTip">
     <span id="__slowTxt">加载较慢，仍在进行中…</span>
+    <button id="__slowAlt">换个源</button>
     <button id="__slowRetry">重新加载</button>
   </div>
   <style>
@@ -236,7 +334,23 @@
     (function () {
       var tip = document.getElementById('__slowTip');
       var txt = document.getElementById('__slowTxt');
+      var alt = document.getElementById('__slowAlt');
       document.getElementById('__slowRetry').onclick = function () { location.reload(); };
+
+      /* "换个源"直接在 Netlify 与 GitHub Pages 之间对调，不需要回到选择页 */
+      var cur = window.__SRC ? window.__SRC.pick : '';
+      if (cur === 'local' && window.__SRC && window.__SRC.here) cur = window.__SRC.here;
+      var other = cur === 'gh' ? 'netlify' : 'gh';
+      if (!cur || !window.__SRC || !window.__SRC.srcs[other]) {
+        alt.style.display = 'none';
+      } else {
+        alt.textContent = '换成 ' + window.__SRC.name[other];
+        alt.onclick = function () {
+          txt.textContent = '正在切换到 ' + window.__SRC.name[other] + '…';
+          window.__SRC.use(other);
+        };
+      }
+
       var t0 = Date.now();
       function inGame() {
         try {
@@ -251,9 +365,9 @@
       var iv = setInterval(function () {
         if (inGame()) { clearInterval(iv); tip.classList.remove('__on'); return; }
         var el = Date.now() - t0;
-        if (el > 20000) {
-          txt.textContent = el > 60000
-            ? '加载仍未完成，建议检查网络后重试'
+        if (el > 10000) {
+          txt.textContent = el > 40000
+            ? '加载仍未完成，建议换个下载源'
             : '加载较慢，仍在进行中…';
           tip.classList.add('__on');
         }
