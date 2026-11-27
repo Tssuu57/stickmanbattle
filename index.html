@@ -35,11 +35,10 @@
     <div class="__bt-bar"><i></i></div>
     <div class="__bt-hint" id="__btHint">首次打开需要几秒，请稍候</div>
 
-    <!-- 下载源选择：GitHub Pages / Netlify / 百度智能云 -->
+    <!-- 下载源选择：GitHub Pages / 百度智能云 -->
     <div class="__bt-src" id="__btSrc" hidden>
       <span class="__bt-src-cap">下载源</span>
       <button type="button" class="__bt-src-btn" data-src="gh">GitHub Pages</button>
-      <button type="button" class="__bt-src-btn" data-src="netlify">Netlify</button>
       <button type="button" class="__bt-src-btn" data-src="bos">百度智能云</button>
     </div>
     <div class="__bt-src-tip" id="__btSrcTip" hidden>选中后自动重新加载</div>
@@ -61,7 +60,7 @@
     @keyframes __btslide{0%{transform:translateX(-100%)}100%{transform:translateX(420%)}}
     .__bt-hint{font-size:12px;color:#7e97c4}
     .__bt-src{display:flex;align-items:center;gap:5px;margin-top:10px;padding:5px;
-      width:min(326px,calc(100vw - 36px));box-sizing:border-box;
+      width:min(268px,calc(100vw - 36px));box-sizing:border-box;
       border-radius:99px;background:rgba(255,255,255,.07);border:1px solid rgba(150,190,255,.22);
       transition:border-color .25s,box-shadow .25s}
     .__bt-src[hidden]{display:none}
@@ -99,49 +98,47 @@
   <!-- ① 内联资源包（JSON / 图片 / 音频）-->
   <!-- 单个包下载失败时原地重试，最多 3 次；避免一次握手抖动就整页报废 -->
   <script>
-    /* 下载源选择：GitHub Pages / Netlify / 百度智能云
+    /* 下载源选择：GitHub Pages / 百度智能云
        ------------------------------------------------------------------
-       生效优先级：?src=gh|netlify|bos|local  >  localStorage 记忆  >  站点默认
+       生效优先级：?src=gh|bos|local  >  localStorage 记忆  >  站点默认
        站点默认：GitHub Pages 上默认走百度智能云（国内节点，实测最快）；
                  其它站点走自身相对路径。
        当前站点就是所选源时用相对路径，不产生跨域请求。
-       调试：?src=local 强制本站，?src=gh / ?src=netlify / ?src=bos 强制指定源（仅本次，不写记忆）。 */
+       调试：?src=local 强制本站，?src=gh / ?src=bos 强制指定源（仅本次，不写记忆）。 */
     window.__SRC = (function () {
       var SRC = {
         gh: 'https://tssuu57.github.io/stickmanbattle/',
-        netlify: 'https://stickmanbattle-cn.netlify.app/',
         bos: 'https://stickmanbattle.su.bcebos.com/'
       };
-      var ORDER = ['gh', 'netlify', 'bos'];
+      var ORDER = ['gh', 'bos'];
       var KEY = 'sb_src_v1';
-      var NAME = { gh: 'GitHub Pages', netlify: 'Netlify', bos: '百度智能云' };
+      var NAME = { gh: 'GitHub Pages', bos: '百度智能云' };
       var host = location.hostname || '';
       var here = /(^|\.)github\.io$/i.test(host) ? 'gh'
-               : /(^|\.)netlify\.app$/i.test(host) ? 'netlify'
                : /(^|\.)bcebos\.com$/i.test(host) ? 'bos' : '';
-      var m = /[?&]src=(gh|netlify|bos|local)(?:&|$)/.exec(location.search || '');
+      var m = /[?&]src=(gh|bos|local)(?:&|$)/.exec(location.search || '');
       /* 兼容旧调试参数 */
       if (!m && /[?&]cdn=0(?:&|$)/.test(location.search || '')) m = ['', 'local'];
-      if (!m && /[?&]cdn=1(?:&|$)/.test(location.search || '')) m = ['', 'netlify'];
+      if (!m && /[?&]cdn=1(?:&|$)/.test(location.search || '')) m = ['', 'bos'];
       var saved = '';
       try { saved = localStorage.getItem(KEY) || ''; } catch (e) {}
       var pick = m ? m[1] : saved;
-      /* 站点默认：GitHub Pages 上默认走百度智能云；其它站点走自身 */
-      if (pick !== 'gh' && pick !== 'netlify' && pick !== 'bos' && pick !== 'local') {
+      /* 旧记忆里可能残留 netlify，这里会落到站点默认分支 */
+      if (pick !== 'gh' && pick !== 'bos' && pick !== 'local') {
         pick = (here === 'gh') ? 'bos' : (here || 'local');
       }
 
       var api = {
         srcs: SRC,
         order: ORDER,
-        fallback: ['bos', 'netlify', 'gh'],   // 换源时的轮换顺序：国内快 → 次选 → 本站
+        fallback: ['bos', 'gh'],              // 换源时的轮换顺序：国内快 → 本站
         here: here,                          // 当前站点所属源（本地为空）
-        pick: pick,                          // gh | netlify | bos | local
+        pick: pick,                          // gh | bos | local
         name: NAME,
         host: (pick === 'local' || pick === here) ? '' : (SRC[pick] || ''),
         /* 记录选择并重载，让新源从下一个请求开始生效 */
         use: function (v) {
-          if (v !== 'gh' && v !== 'netlify' && v !== 'bos') return;
+          if (v !== 'gh' && v !== 'bos') return;
           try { localStorage.setItem(KEY, v); } catch (e) {}
           var q = (location.search || '').replace(/^\?/, '').split('&')
             .filter(function (p) { return p && !/^src=/.test(p); });
@@ -351,10 +348,10 @@
       var alt = document.getElementById('__slowAlt');
       document.getElementById('__slowRetry').onclick = function () { location.reload(); };
 
-      /* "换个源"按 百度云 → Netlify → 本站 轮换，不需要回到选择页 */
+      /* "换个源"按 百度云 → 本站 轮换，不需要回到选择页 */
       var cur = window.__SRC ? window.__SRC.pick : '';
       if (cur === 'local' && window.__SRC && window.__SRC.here) cur = window.__SRC.here;
-      var fb = (window.__SRC && window.__SRC.fallback) || ['bos', 'netlify', 'gh'];
+      var fb = (window.__SRC && window.__SRC.fallback) || ['bos', 'gh'];
       var other = fb[(fb.indexOf(cur) + 1) % fb.length];
       if (!cur || !window.__SRC || !window.__SRC.srcs[other]) {
         alt.style.display = 'none';
