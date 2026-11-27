@@ -67,10 +67,18 @@
     } catch (e) { return null; }
   }
 
+  // space 场地没有独立重绘贴图，复用 forest 的木台/墙材质，保证四个场地浅色统一
+  var ALIAS = {
+    platform_space: "platform_forest",
+    wall_space: "wall_forest",
+    corner_wall_space: "corner_wall_forest"
+  };
+
   function applySprite(sp) {
     var sf = sp.spriteFrame;
     if (!sf) return;
     var nm = sf.name || sf._name;
+    if (nm && !IMG[nm] && ALIAS[nm]) nm = ALIAS[nm];
     if (!nm || !IMG[nm]) return;
     if (NEWF[nm] && sp.spriteFrame === NEWF[nm]) return;
     var nf = NEWF[nm];
