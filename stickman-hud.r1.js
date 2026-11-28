@@ -11,7 +11,9 @@
   function hcOf(n){ try{ return valid(n)?n.getComponent("HumanController"):null; }catch(_){ return null; } }
 
   var FONT="JCRound,'PingFang SC','Microsoft YaHei',system-ui,sans-serif";
-  var COL={p1:"#4fd2ff",p2:"#ff6b6b"};
+  // 和风：文字/描边用墨色，填充用角色色（比文字略亮，保证纸条上压得住）
+  var COL={p1:"#3E6E8E",p2:"#A8503F"};
+  var FILL={p1:"#3E6E8E",p2:"#C05A4A"};
   var root=null, el={};
   function css(e,s){ e.style.cssText=s; return e; }
   function div(p,s,cls){ var d=document.createElement("div"); if(s)d.style.cssText=s; if(p)p.appendChild(d); return d; }
@@ -22,14 +24,18 @@
     st.textContent=
       "@keyframes hud2shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}"+
       "@keyframes hud2low{0%,100%{filter:brightness(1)}50%{filter:brightness(1.6)}}"+
-      ".hud2card{position:absolute;top:8px;display:flex;flex-direction:column;gap:4px;max-width:min(36vw,330px)}"+
-      ".hud2row{display:flex;align-items:center;gap:6px}"+
-      ".hud2tag{font-weight:800;font-size:15px;text-shadow:0 1px 2px rgba(0,0,0,.7);min-width:22px}"+
-      ".hud2bar{position:relative;flex:1;min-width:110px;width:min(22vw,210px);height:14px;border-radius:7px;background:rgba(10,14,24,.72);border:2px solid rgba(255,255,255,.85);overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.4)}"+
-      ".hud2trail,.hud2fill{position:absolute;top:0;bottom:0;left:0;border-radius:5px}"+
-      ".hud2trail{background:#fff;transition:width .5s ease .25s}"+
-      ".hud2fill{transition:width .12s linear}"+
-      ".hud2num{font-weight:800;font-size:15px;min-width:28px;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,.8)}"+
+      ".hud2card{position:absolute;top:14px;display:flex;flex-direction:column;gap:5px;max-width:min(38vw,340px)}"+
+      ".hud2row{display:flex;align-items:center;gap:7px}"+
+      ".hud2tag{font-weight:700;font-size:12px;letter-spacing:1.5px;min-width:18px;text-shadow:0 1px 0 rgba(250,246,232,.85)}"+
+      // 血条＝卷轴：旧纸底槽 + 两端 4px 轴头，去掉白描边与胶囊圆角
+      ".hud2bar{position:relative;flex:1;min-width:130px;width:min(26vw,240px);height:18px;border-radius:2px;background:#DDD2B4;box-shadow:inset 0 1px 2px rgba(46,58,52,.24),0 1px 3px rgba(46,58,52,.16)}"+
+      ".hud2bar::before,.hud2bar::after{content:'';position:absolute;top:-4px;bottom:-4px;width:4px;border-radius:2px;background:#3A4A42;box-shadow:inset 0 1px 0 rgba(250,246,232,.35);z-index:3}"+
+      ".hud2bar::before{left:-2px}.hud2bar::after{right:-2px}"+
+      ".hud2trail,.hud2fill{position:absolute;top:0;bottom:0;left:0;border-radius:2px}"+
+      ".hud2trail{background:#F6EFDC;transition:width .5s ease .25s}"+
+      ".hud2fill{transition:width .12s linear;box-shadow:inset 0 1px 0 rgba(250,246,232,.22),inset 0 -1px 0 rgba(0,0,0,.10)}"+
+      // 数字贴在条内端：墨边纸字，压深底压浅底都读得清
+      ".hud2num{position:absolute;top:0;bottom:0;display:flex;align-items:center;padding:0 8px;font-weight:700;font-size:14px;letter-spacing:.3px;font-variant-numeric:tabular-nums;color:#FAF6E8;-webkit-text-stroke:2.2px #2E3A34;paint-order:stroke fill;z-index:4;pointer-events:none}"+
       ".hud2chips{display:flex;flex-wrap:wrap;gap:4px}"+
       ".hud2chip{font-size:12px;line-height:1;padding:4px 7px;border-radius:999px;background:rgba(10,14,24,.68);border:1px solid rgba(255,255,255,.25);white-space:nowrap}"+
       ".hud2desc{font-size:12px;line-height:1.35;color:#eef2fa;background:rgba(10,14,24,.78);padding:4px 9px;border-radius:7px;transition:opacity .4s;max-width:280px}"+".hud2chip[data-d]{pointer-events:auto;cursor:pointer}.hud2field{pointer-events:auto;cursor:pointer}"+".hud2fdesc{font-size:12px;line-height:1.35;color:#ffe9a8;background:rgba(10,14,24,.78);padding:4px 10px;border-radius:7px;transition:opacity .4s;max-width:300px;text-align:center}"+
@@ -51,12 +57,13 @@
       var tg=div(r1,"color:"+COL[k]); tg.className="hud2tag"; tg.textContent=k.toUpperCase();
       var bar=div(r1,""); bar.className="hud2bar";
       var trail=div(bar,""); trail.className="hud2trail";
-      var fill=div(bar,"background:linear-gradient(180deg,"+COL[k]+","+(right?"#d94848":"#2a9fd6")+")"); fill.className="hud2fill";
+      var fill=div(bar,"background:"+FILL[k]); fill.className="hud2fill";
       if(right){ trail.style.left="auto"; trail.style.right="0"; fill.style.left="auto"; fill.style.right="0"; }
-      var num=div(r1,""); num.className="hud2num";
+      // 数字塞进条的内端（靠屏幕中心的一侧）
+      var num=div(bar,""); num.className="hud2num"; num.style[right?"left":"right"]="0";
       var chips=div(c,""); chips.className="hud2chips"; if(right)chips.style.justifyContent="flex-end";
       var desc=div(c,""); desc.className="hud2desc"; if(right)desc.style.textAlign="right";
-      el[k]={card:c,bar:bar,fill:fill,trail:trail,num:num,chips:chips,desc:desc,hp:null,chipSig:"",descUntil:0,passive:null};
+      el[k]={card:c,bar:bar,fill:fill,trail:trail,num:num,chips:chips,desc:desc,hp:null,numOn:null,chipSig:"",descUntil:0,passive:null};
     });
     var cen=div(root,""); cen.className="hud2center";
     el.field=div(cen,""); el.field.className="hud2field";

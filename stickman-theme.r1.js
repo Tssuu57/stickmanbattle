@@ -137,12 +137,7 @@
     var st = document.createElement('style');
     st.id = '__themeCss';
     st.textContent = [
-      '.hud2bar{background:rgba(250,247,236,.62)!important;border-color:rgba(46,58,52,.62)!important}',
-      '.hud2trail{background:rgba(46,58,52,.30)!important}',
-      '.hud2fill{background:linear-gradient(180deg,#3E6E8E,#2A4C63)!important}',
-      '.hud2card[style*="right"] .hud2fill{background:linear-gradient(180deg,#C05A4A,#8E3F33)!important}',
-      '.hud2num{color:#2E3A34!important;text-shadow:0 1px 0 rgba(255,255,255,.6)!important}',
-      '.hud2tag{color:#2E3A34!important;text-shadow:0 1px 0 rgba(255,255,255,.55)!important}',
+      // 血条（.hud2bar/.hud2fill/.hud2num/.hud2tag/.hud2trail）由 stickman-hud.r1.js 自己管（P1 卷轴版），此处不再 !important 覆盖
       '#__guideBtnDom{background:#C05A4A!important;border-color:#8E3F33!important;color:#FFF8EC!important}'
     ].join('');
     document.head.appendChild(st);
