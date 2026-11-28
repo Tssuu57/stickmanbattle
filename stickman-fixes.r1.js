@@ -457,11 +457,19 @@
   }
 
   // ---------- 10. 全屏卡顿：限制画布像素量（约 1920×1080） ----------
+  // 档位由 设置 → Graphics → Resolution 决定（0 高 / 1 中 / 2 低），存在 localStorage
   var MAXPX=2.1e6;
+  function maxPx(){
+    try{
+      var lv=parseInt(localStorage.getItem("stickman.resLevel")||"0",10);
+      if(isNaN(lv))lv=0; lv=Math.max(0,Math.min(2,lv));
+      return [2.1e6,1.4e6,0.9e6][lv]||2.1e6;
+    }catch(e){ return 2.1e6; }
+  }
   function capRes(){
     try{
       var w=window.innerWidth||1, h=window.innerHeight||1;
-      var r=Math.max(.5,Math.min(2,Math.sqrt(MAXPX/(w*h))));
+      var r=Math.max(.5,Math.min(2,Math.sqrt(maxPx()/(w*h))));
       if(Math.abs((cc.view._maxPixelRatio||2)-r)<.01)return;
       cc.view._maxPixelRatio=r; cc.view.enableRetina(true);
       if(cc.view._resizeEvent) cc.view._resizeEvent(true);
