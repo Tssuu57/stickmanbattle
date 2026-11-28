@@ -1,8 +1,7 @@
 /* =========================================================================
- * P3-2 卷轴横拉转场  (r5 · 横向手卷修正版)
+ * P3-2 卷轴横拉转场  (r4 · 绘卷墨韵升级版)
  *  外观：方案A 和纸质感 + 淡墨远山 + 樱瓣 + 铜轴头，
- *        漆木杆（方案B 黑漆描金）移到画面左右两端——横向铺开的手卷，
- *        展开时两根杆各带一片纸向左右退开，中缝不再有竖杆。
+ *        中缝卷轴杆换成方案B 的漆木杆（黑漆描金）。
  *  机制不变：点战斗的瞬间就合拢纸幕，遮住场景切换的黑屏加载期，
  *  等新场景加载完成（getScene().name 变化）再从中间向两边拉开。
  *  hook 按组件实例判断（r3 修复）：战斗返回后 ChooseView 重建也能重新 hook。
@@ -14,7 +13,7 @@
   if (/[?&]trans=0/.test(location.search || '')) return;
   if (window.__transR1) return;
   var T = window.__transR1 = {
-    version: 'trans-r5', plays: 0, hooks: 0, last: '', err: '',
+    version: 'trans-r4', plays: 0, hooks: 0, last: '', err: '',
     report: function () { return { version: T.version, plays: T.plays, hooks: T.hooks, last: T.last, err: T.err, phase: phase }; },
     play: function () { T.plays++; closeNow(); setTimeout(openNow, 60); },
     // 调试：定格在合拢态，便于截图核对
@@ -44,18 +43,18 @@
     st.textContent = [
       // 和纸面
       '.__twWashi{position:absolute;inset:0;background-color:#F7F1DF;background-image:' + washiBG + '}',
-      // 卷曲高光：靠近外侧（杆一侧）的纸面立体感
-      '.__twL .__twWashi{box-shadow:inset 16px 0 22px -12px rgba(70,58,40,.22),inset -8px 0 14px -10px rgba(255,255,255,.6)}',
-      '.__twR .__twWashi{box-shadow:inset -16px 0 22px -12px rgba(70,58,40,.22),inset 8px 0 14px -10px rgba(255,255,255,.6)}',
-      // 卷纸层次（外侧杆旁的纸边卷曲）
+      // 卷曲高光：靠近中缝一侧的立体感
+      '.__twL .__twWashi{box-shadow:inset -16px 0 22px -12px rgba(70,58,40,.22),inset 8px 0 14px -10px rgba(255,255,255,.6)}',
+      '.__twR .__twWashi{box-shadow:inset 16px 0 22px -12px rgba(70,58,40,.22),inset -8px 0 14px -10px rgba(255,255,255,.6)}',
+      // 卷纸层次（中缝旁的纸边卷曲）
       '.__twCurl{position:absolute;top:0;bottom:0;width:7px;z-index:2;opacity:.55}',
-      '.__twL .__twCurl{left:13px;background:linear-gradient(90deg,transparent,rgba(120,104,76,.28) 40%,rgba(255,255,255,.5) 75%,transparent)}',
-      '.__twR .__twCurl{right:13px;background:linear-gradient(270deg,transparent,rgba(120,104,76,.28) 40%,rgba(255,255,255,.5) 75%,transparent)}',
-      // 漆木卷轴杆——横向手卷：移到纸幕外侧两端（L 左端 / R 右端）
+      '.__twL .__twCurl{right:13px;background:linear-gradient(90deg,transparent,rgba(120,104,76,.28) 40%,rgba(255,255,255,.5) 75%,transparent)}',
+      '.__twR .__twCurl{left:13px;background:linear-gradient(270deg,transparent,rgba(120,104,76,.28) 40%,rgba(255,255,255,.5) 75%,transparent)}',
+      // 漆木卷轴杆（每片各带半边，合拢时并成一根）
       '.__twRod{position:absolute;top:0;bottom:0;width:13px;z-index:3;background:' + ROD_GRAD + ';box-shadow:0 0 10px rgba(0,0,0,.28)}',
-      '.__twL .__twRod{left:0}',
-      '.__twR .__twRod{right:0;transform:scaleX(-1)}',
-      // 铜轴头（上下），随杆在两端
+      '.__twL .__twRod{right:0}',
+      '.__twR .__twRod{left:0;transform:scaleX(-1)}',
+      // 铜轴头（上下）
       '.__twCap{position:absolute;left:50%;width:26px;height:15px;border-radius:5px;z-index:4;transform:translateX(-50%);background:' + CAP_GRAD + ';box-shadow:0 1px 4px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.5)}',
       '.__twCap.t{top:16px}',
       '.__twCap.b{bottom:16px}',
