@@ -10,6 +10,10 @@
 
    图标复用顶栏的齿轮（icon_settings），运行时把纹理染成白色，与相邻的
    Music/Credits/Privacy 三个白图标保持同一视觉。
+
+   配色：原版面板是亮蓝底 + 深蓝描边，与和纸米黄背景冲突。这里把底板换成
+   深墨绿（#33413A）配近黑描边，文字改米色，与标题原有的深墨色系一致。
+   底板是运行时用 canvas 画的九宫格（圆角 30 + 4px 描边），不新增图片资源。
    ========================================================================== */
 (function () {
   "use strict";
@@ -78,6 +82,100 @@
     return dotFrame;
   }
 
+  /* ---------------- 面板配色：亮蓝 → 深墨绿和风纸 ---------------- */
+  var THEME = {
+    fill:  "#33413A",   // 面板底色
+    edge:  "#1C2420",   // 描边
+    title: "#F6EEDC",   // 标题
+    text:  "#EDE3C8"    // 正文与图标标签
+  };
+
+  function hx(h) {
+    h = String(h).replace("#", "");
+    return new cc.Color(parseInt(h.substr(0, 2), 16),
+                        parseInt(h.substr(2, 2), 16),
+                        parseInt(h.substr(4, 2), 16), 255);
+  }
+
+  /* 一张 160×160 的九宫格：四角固定，中间纯色拉伸 */
+  var panelFrame = null;
+  function panelFrameGet() {
+    if (panelFrame) return panelFrame;
+    try {
+      var S = 160, R = 30, LW = 4;
+      var cv = document.createElement("canvas");
+      cv.width = cv.height = S;
+      var g = cv.getContext("2d");
+      function rr(x, y, w, h, r) {
+        g.beginPath();
+        g.moveTo(x + r, y);
+        g.lineTo(x + w - r, y);
+        g.quadraticCurveTo(x + w, y, x + w, y + r);
+        g.lineTo(x + w, y + h - r);
+        g.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        g.lineTo(x + r, y + h);
+        g.quadraticCurveTo(x, y + h, x, y + h - r);
+        g.lineTo(x, y + r);
+        g.quadraticCurveTo(x, y, x + r, y);
+        g.closePath();
+      }
+      // 外圈描边
+      rr(LW / 2, LW / 2, S - LW, S - LW, R);
+      g.fillStyle = THEME.edge;
+      g.fill();
+      // 内层底色
+      rr(LW * 1.5, LW * 1.5, S - LW * 3, S - LW * 3, R - LW);
+      g.fillStyle = THEME.fill;
+      g.fill();
+
+      var tex = new cc.Texture2D();
+      tex.initWithElement(cv);
+      tex.handleLoadedTexture(true);
+      var sf = new cc.SpriteFrame(tex);
+      sf.insetLeft = sf.insetRight = R + LW;
+      sf.insetTop = sf.insetBottom = R + LW;
+      panelFrame = sf;
+    } catch (e) {
+      panelFrame = null;
+    }
+    return panelFrame;
+  }
+
+  function paintText(root) {
+    for (var i = 0; i < root.children.length; i++) {
+      var c = root.children[i];
+      if (c.name === "Title") continue;          // 标题单独用更亮的一档
+      if (c.getComponent(cc.Label)) c.color = hx(THEME.text);
+      else if (c.children.length) paintText(c);
+    }
+  }
+
+  function applyTheme(avNode) {
+    var sf = panelFrameGet();
+    if (!sf) return false;
+    ["Popup", "PopupCredits"].forEach(function (nm) {
+      var n = avNode.getChildByName(nm);
+      if (!n) return;
+      var s = n.getComponent(cc.Sprite);
+      if (s) {
+        s.spriteFrame = sf;
+        s.type = cc.Sprite.Type.SLICED;
+      }
+      var t = n.getChildByName("Title");
+      if (t && t.getComponent(cc.Label)) t.color = hx(THEME.title);
+      paintText(n);
+    });
+    // Credits 面板原本 720 宽，正文却有 766 宽，直接溢出到面板外。
+    // 原版深色字压在米黄背景上还看得见，换成米色字后就消失了，所以加宽面板。
+    var pc = avNode.getChildByName("PopupCredits");
+    if (pc) {
+      if (pc.width < 829) pc.width = 830;
+      var back = pc.getChildByName("back");
+      if (back) back.x = 383;          // 关闭按钮跟着右移，保持探出面板右上角
+    }
+    return true;
+  }
+
   function paint(btn, lbl, on) {
     var ic = btn && btn.getChildByName("Icon");
     if (ic) ic.opacity = on ? 255 : 92;
@@ -89,9 +187,15 @@
 
   function inject(av) {
     var node = av && av.node;
-    if (!node || node.__gfxDone) return;
+    if (!node) return;
     var pop = node.getChildByName("Popup");
     if (!pop) return;
+    // 面板配色：独立于 Graphics 行，成功一次后打标
+    if (!node.__themeDone) {
+      try { if (applyTheme(node)) node.__themeDone = 1; }
+      catch (e) { LOG("配色失败", e && e.message); }
+    }
+    if (node.__gfxDone) return;
     var btns = pop.getChildByName("buttons");
     if (!btns) return;
     if (btns.getChildByName("gfxBtn")) { node.__gfxDone = 1; return; }
