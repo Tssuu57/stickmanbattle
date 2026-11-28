@@ -15,15 +15,22 @@
          是 1/4、1/16 的小图，纹理 cache 命中率上升、带宽下降。
          对低配机是净收益。
 
-   关闭：在地址后加 ?mip=0
+   开关：游戏内 设置 → Graphics；或地址后加 ?mip=0 强制关闭
    ========================================================================== */
 (function () {
   "use strict";
 
   var Q = (location.search || "");
-  if (/[?&]mip=0(?:&|$)/.test(Q)) return;          // 手动关闭
+  var FORCE_OFF = /[?&]mip=0(?:&|$)/.test(Q);     // 地址栏强制关闭
   if (window.__MIP_INSTALLED) return;
   window.__MIP_INSTALLED = true;
+
+  var PREF_KEY = "stickman.mipmapOn";
+  function prefOn() {
+    try { var v = localStorage.getItem(PREF_KEY); return v === null ? true : v === "1"; }
+    catch (e) { return true; }
+  }
+  var enabled = FORCE_OFF ? false : prefOn();
 
   var LOG = function () {
     try { console.log.apply(console, ["[MIP]"].concat([].slice.call(arguments))); } catch (e) {}
@@ -35,6 +42,7 @@
   function isPOT(n) { return n > 0 && (n & (n - 1)) === 0; }
 
   function applyOne(tex, gl) {
+    if (!enabled) return 0;
     if (!tex || tex.__mipDone) return 0;
     var w = tex.width | 0, h = tex.height | 0;
     if (w < 32 || h < 32) return 0;                 // 太小的没意义
@@ -64,35 +72,78 @@
     }
   }
 
-  var stat = { n: 0, gl: null };
-
-  function sweep() {
-    if (!window.cc || !cc.director || !cc.game) return 0;
-    var gl = cc.game._renderContext;
-    if (!gl || !gl.generateMipmap) return 0;
+  function walkSprites(fn) {
+    if (!window.cc || !cc.director) return;
     var scene = cc.director.getScene();
-    if (!scene) return 0;
-    var added = 0;
-    var stack = [scene];
-    var guard = 0;
+    if (!scene) return;
+    var stack = [scene], guard = 0;
     while (stack.length && guard++ < 4000) {
       var n = stack.pop();
       var s = n.getComponent && n.getComponent(cc.Sprite);
       if (s && s.spriteFrame) {
-        try {
-          var t = s.spriteFrame.getTexture();
-          if (t) added += applyOne(t, gl);
-        } catch (e) {}
+        try { fn(s.spriteFrame.getTexture()); } catch (e) {}
       }
       var ch = n.children;
       for (var i = 0; i < ch.length; i++) stack.push(ch[i]);
     }
+  }
+
+  var stat = { n: 0 };
+
+  function sweep() {
+    if (!enabled) return 0;
+    if (!window.cc || !cc.director || !cc.game) return 0;
+    var gl = cc.game._renderContext;
+    if (!gl || !gl.generateMipmap) return 0;
+    if (!cc.director.getScene()) return 0;
+    var added = 0;
+    walkSprites(function (t) { if (t) added += applyOne(t, gl); });
     if (added) {
       stat.n += added;
       if (stat.n <= 24) LOG("+", added, "个纹理已开 mipmap，累计", stat.n);
     }
     return added;
   }
+
+  /* 关闭：把已开过的纹理还原成纯双线性。
+     mipmap 数据本身留在显存里（GL 无法单独释放），只是不再被采样。 */
+  function revertAll() {
+    if (!window.cc || !cc.director || !cc.game) return;
+    var gl = cc.game._renderContext;
+    if (!gl) return;
+    var n = 0;
+    walkSprites(function (t) {
+      if (!t || !t.__mipDone) return;
+      var gt = t._texture;
+      if (!gt || !gt._glID) return;
+      try {
+        gl.bindTexture(gl.TEXTURE_2D, gt._glID);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, LINEAR);
+        gt._minFilter = LINEAR;
+        gt._magFilter = LINEAR;
+        gt._mipFilter = LINEAR;
+        t._minFilter = LINEAR;
+        t._magFilter = LINEAR;
+        t._mipFilter = LINEAR;
+        t._mipmaps = false;
+        t.__mipDone = 0;
+        n++;
+      } catch (e) {}
+    });
+    if (n) LOG("已关闭，还原", n, "个纹理");
+  }
+
+  // 给设置面板用的开关接口
+  window.__mipOn = function () { return enabled && !FORCE_OFF; };
+  window.__mipSet = function (on) {
+    if (FORCE_OFF) return false;                    // 地址栏强制关闭时不响应
+    enabled = !!on;
+    try { localStorage.setItem(PREF_KEY, enabled ? "1" : "0"); } catch (e) {}
+    if (enabled) { stat.n = 0; sweep(); }
+    else revertAll();
+    return enabled;
+  };
 
   function boot() {
     if (!window.cc || !cc.director || !cc.game) return false;
@@ -102,6 +153,7 @@
     // 场景切换后补扫（角色/武器/UI 都是按场景动态创建的）
     try {
       cc.director.on(cc.Director.EVENT_AFTER_SCENE_LAUNCH, function () {
+        if (!enabled) return;
         setTimeout(sweep, 60);
         setTimeout(sweep, 400);
         setTimeout(sweep, 1200);
@@ -114,7 +166,7 @@
       if (Date.now() - t0 > 45000) { clearInterval(iv); LOG("扫描结束，共", stat.n, "个纹理"); }
     }, 900);
     setTimeout(sweep, 500);
-    LOG("已装载，POT 纹理将启用 mipmap（?mip=0 可关闭）");
+    LOG("已装载，" + (enabled ? "POT 纹理将启用 mipmap" : "当前为关闭状态") + "（设置→Graphics 可切换）");
     return true;
   }
 
