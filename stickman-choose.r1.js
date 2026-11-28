@@ -335,5 +335,10 @@
     }
   }
 
-  setInterval(tick, 220);
+  // P4: 统一内核调度；内核未加载时退回原生定时器
+  if (window.__skinCore && window.__skinCore.add) {
+    window.__skinCore.add('choose', tick, 220);
+  } else {
+    setInterval(tick, 220);
+  }
 })();
