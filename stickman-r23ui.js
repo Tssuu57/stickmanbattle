@@ -21,11 +21,11 @@
   }
 
   // ---------- 选择界面 ----------
-  var ROWS={PassiveBtn:240,weaponsshopping:110,skinsshopping:-20,ColorAllShopping:-150};
+  var ROWS={PassiveBtn:275,weaponsshopping:185,skinsshopping:95,ColorAllShopping:5};
   function fixCol(inner,n){
     if(!inner)return;
     var w=inner.getChildByName("weaponsshopping"); if(!w)return;
-    for(var k in ROWS){ var c=inner.getChildByName(k==="PassiveBtn"?"PassiveBtn"+n:k); if(!c)continue; c.x=w.x; c.y=ROWS[k]; c.scale=0.92; }
+    for(var k in ROWS){ var c=inner.getChildByName(k==="PassiveBtn"?"PassiveBtn"+n:k); if(!c)continue; c.x=w.x; c.y=ROWS[k]; c.scale=1; }
     var pb=inner.getChildByName("PassiveBtn"+n);
     if(pb){ var o=(window.__passivesOrig||{})["p"+n]||"random", t=o==="random"||!PI||!PI[o]?"Passive":PI[o].name; if(pb.__lbl!==t){ pb.__lbl=t; relabel(pb,t); } }
   }
