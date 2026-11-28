@@ -128,5 +128,10 @@
     try { fixField(); } catch (e) { T.err = 'field:' + (e && e.message); }
   }
 
-  setInterval(apply, 500);
+  // P4: 统一内核调度；内核未加载时退回原生定时器
+  if (window.__skinCore && window.__skinCore.add) {
+    window.__skinCore.add('hudpaper', apply, 500);
+  } else {
+    setInterval(apply, 500);
+  }
 })();
