@@ -237,9 +237,9 @@
     var vp=defP||pasOf(vic);
     // ---- 攻击方 ----
     if(att&&valid(att)&&!dead(att)&&dmg<200){
-      if(atkP==="assassin"&&now-(att.__r22as||0)>=4000){ att.__r22as=now; dmg*=2.5; toast("🗡️ 影刺 ×2.5",att,new cc.Color(200,120,255),28); }
+      if(atkP==="assassin"&&now-(att.__r22as||0)>=4000){ att.__r22as=now; dmg*=2.5; toast("🗡️ 恶作剧之心 ×2.5",att,new cc.Color(200,120,255),28); }
       if(atkP==="oneShot"&&dmg>=3&&vicHc.maxhp>0)dmg=Math.max(dmg,vicHc.maxhp*0.2);
-      if(atkP==="hunter"&&vicHc.hp<vicHc.maxhp*0.35){ dmg*=1.8; if(now-(att.__r22hu||0)>1500){ att.__r22hu=now; toast("🎯 猎杀",att,new cc.Color(255,90,60),26); } }
+      if(atkP==="hunter"&&vicHc.hp<vicHc.maxhp*0.35){ dmg*=1.8; if(now-(att.__r22hu||0)>1500){ att.__r22hu=now; toast("🎯 刽子手",att,new cc.Color(255,90,60),26); } }
       if(atkP==="gambler"){
         if(Math.random()<0.04&&!vicHc.isDead){ dmg=Math.max(dmg,vicHc.hp+1); toast("🎲 斩！",vic,new cc.Color(255,50,50),32); }
         else { var k=[0.5,0.75,1,1.25,1.5,2,2.5][Math.floor(Math.random()*7)]; dmg*=k; if(k>=2)toast("🎲 ×"+k,att,new cc.Color(255,210,60),24); }
@@ -253,8 +253,8 @@
       }
       if(atkP==="spark"&&Math.random()<0.4){
         vic.__r22mk=(vic.__r22mk||0)+1;
-        if(vic.__r22mk>=3){ vic.__r22mk=0; setTimeout(function(){ if(!valid(vic)||dead(vic))return; ring(vic,new cc.Color(120,200,255),220); var a=pos(att),b=pos(vic),sx=(a&&b&&b.x<a.x)?-1:1; hurt(vic,12,sx*900,700,"被动:雷印"); toast("⚡ 雷印爆炸",vic,new cc.Color(120,200,255),30); },0); }
-        else toast("⚡ 雷印 "+vic.__r22mk+"/3",vic,new cc.Color(140,210,255),20);
+        if(vic.__r22mk>=3){ vic.__r22mk=0; setTimeout(function(){ if(!valid(vic)||dead(vic))return; ring(vic,new cc.Color(120,200,255),220); var a=pos(att),b=pos(vic),sx=(a&&b&&b.x<a.x)?-1:1; hurt(vic,12,sx*900,700,"被动:恶曜开眼"); toast("⚡ 恶曜开眼爆炸",vic,new cc.Color(120,200,255),30); },0); }
+        else toast("⚡ 恶曜开眼 "+vic.__r22mk+"/3",vic,new cc.Color(140,210,255),20);
       }
       if(atkP==="frostlord"){ att.__r22fc=(att.__r22fc||0)+1; if(att.__r22fc%4===0){ vic.__r22frz=now+1000; toast("🧊 冻住",vic,new cc.Color(150,220,255),28); } }
       if(atkHc.__r22punch>0){ atkHc.__r22punch--; dmg*=1.6; toast("🥊 蓄力拳 ("+atkHc.__r22punch+")",att,new cc.Color(255,120,80),24); }
@@ -265,13 +265,13 @@
     if(vp==="conjurer"&&att&&now>(vic.__r22cj||0)&&Math.random()<0.25){
       vic.__r22cj=now+2500;
       setTimeout(function(){ var a=pos(vic), b=pos(att); if(!a||!b)return; var side=(a.x<b.x)?1:-1; moveBy(vic,b.x+side*140-a.x,b.y+40-a.y); },0);
-      toast("✨ 瞬身",vic,new cc.Color(220,170,255),26); return 0;
+      toast("✨ 背刺者",vic,new cc.Color(220,170,255),26); return 0;
     }
     if(vp==="brawler"&&att&&dist(att,vic)<260)dmg*=0.65;
     if(vicHc.__featherEnd&&now<vicHc.__featherEnd)dmg*=0.75;
     if(vp==="absorber"){ var j=joyOf(vic); if(j&&!j.bigSkillState)j.bigSkillTimer+=Math.min(3,dmg*0.08); }
     if(vicHc.__r22share&&now<vicHc.__r22share&&att&&valid(att)){ var half=dmg*0.5; dmg-=half; var ah=hcOf(att); if(ah){ var pct=Math.max(1,Math.round(half/ah.maxhp*100)); setTimeout(function(){ if(valid(att))hurt(att,pct,undefined,undefined,"道具:有难同当"); },0); } }
-    if(vp==="ironwall"&&dmg>18){ dmg=18; if(now-(vic.__r22iw||0)>1200){ vic.__r22iw=now; toast("🛡️ 铁壁",vic,new cc.Color(200,200,220),24); } }
+    if(vp==="ironwall"&&dmg>18){ dmg=18; if(now-(vic.__r22iw||0)>1200){ vic.__r22iw=now; toast("🛡️ 头鸟坚壁",vic,new cc.Color(200,200,220),24); } }
     return Math.round(dmg);
   };
 
@@ -289,7 +289,7 @@
         if((n.__r22vy||0)<-650&&vy>-120&&now>(n.__r22st||0)){
           n.__r22st=now+1200; ring(n,new cc.Color(255,160,60),300);
           var o=oppOf(n);
-          if(o&&!dead(o)&&dist(n,o)<300){ var a=pos(n),b=pos(o),sx=(a&&b&&b.x<a.x)?-1:1; hurt(o,8,sx*1100,900,"被动:天坠"); toast("☄️ 天坠",n,new cc.Color(255,160,60),28); }
+          if(o&&!dead(o)&&dist(n,o)<300){ var a=pos(n),b=pos(o),sx=(a&&b&&b.x<a.x)?-1:1; hurt(o,8,sx*1100,900,"被动:翱翔者"); toast("☄️ 翱翔者",n,new cc.Color(255,160,60),28); }
         }
         n.__r22vy=vy;
       }
@@ -307,7 +307,7 @@
       if(!n.__r22rw&&h.hp>0&&h.hp<h.maxhp*0.25){
         var back=null; for(var i=0;i<hist.length;i++){ if(now-hist[i][0]>=4500){ back=hist[i][1]; } }
         if(back===null&&hist.length)back=hist[0][1];
-        if(back>h.hp){ n.__r22rw=true; h.hp=Math.min(h.maxhp,back); bar(h); ring(n,new cc.Color(160,255,200),200); toast("⏪ 回溯",n,new cc.Color(160,255,200),32); }
+        if(back>h.hp){ n.__r22rw=true; h.hp=Math.min(h.maxhp,back); bar(h); ring(n,new cc.Color(160,255,200),200); toast("⏪ 音火锻淬",n,new cc.Color(160,255,200),32); }
       }
     }
   }
