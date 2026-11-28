@@ -331,7 +331,7 @@
       if (sig !== hpSig) { hpSig = sig; hpStill = 0; hideTip(); }
       else {
         hpStill++;
-        if (hpStill * TICK > 40000 && now() - roundAt > 25000) showTip("skip", "卡住了？点我结束本局");
+        if (hpStill * TICK > 30000 && now() - roundAt > 18000) showTip("skip", "卡住了？点我结束本局");
         if (tip && tip.style.display === "flex" && now() - tipAt > 30000) hideTip(); // 不自作主张，30 秒后收起
       }
 
