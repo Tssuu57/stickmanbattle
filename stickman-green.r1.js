@@ -73,6 +73,12 @@
       T.ticked++;
     } catch (e) {}
   }
-  setInterval(tick, 60);
-  setTimeout(tick, 600);
+  // P4: 统一内核调度；内核未加载时退回原生定时器
+  if (window.__skinCore && window.__skinCore.add) {
+    window.__skinCore.add('green', tick, 60);
+    window.__skinCore.once(tick, 600);
+  } else {
+    setInterval(tick, 60);
+    setTimeout(tick, 600);
+  }
 })();
