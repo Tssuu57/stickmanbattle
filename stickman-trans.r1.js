@@ -170,6 +170,13 @@
     } catch (e) { T.err = String(e && e.message || e); }
   }
 
-  setInterval(tick, 25);
-  setTimeout(tick, 400);
+  // P4: 统一内核调度；内核未加载时退回原生定时器
+  // 注意：ChangeScene 劫持在 tick() 内的 tryHook()，逻辑完全保留
+  if (window.__skinCore && window.__skinCore.add) {
+    window.__skinCore.add('trans', tick, 25);
+    window.__skinCore.once(tick, 400);
+  } else {
+    setInterval(tick, 25);
+    setTimeout(tick, 400);
+  }
 })();
