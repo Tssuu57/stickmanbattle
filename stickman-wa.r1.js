@@ -252,11 +252,18 @@
 
   function boot() {
     css();
-    setInterval(css, 900);
-    setInterval(function () {
-      try { tick(); } catch (e) { T.err = "tick:" + e.message; }
-    }, 400);
-    setTimeout(tick, 600);
+    var cssLoop = function () { try { css(); } catch (e) {} };
+    var tickLoop = function () { try { tick(); } catch (e) { T.err = "tick:" + e.message; } };
+    // P4: 统一内核调度；内核未加载时退回原生定时器
+    if (window.__skinCore && window.__skinCore.add) {
+      window.__skinCore.add('wa:css', cssLoop, 900);
+      window.__skinCore.add('wa', tickLoop, 400);
+      window.__skinCore.once(tick, 600);
+    } else {
+      setInterval(cssLoop, 900);
+      setInterval(tickLoop, 400);
+      setTimeout(tick, 600);
+    }
   }
 
   if (typeof cc !== "undefined" && cc.director && cc.director.getScene()) boot();
