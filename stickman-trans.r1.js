@@ -1,7 +1,9 @@
 /* =========================================================================
- * P3-2 卷轴横拉转场  (r2)
+ * P3-2 卷轴横拉转场  (r3)
  *  关键修复：点战斗的瞬间就合拢纸幕，遮住场景切换的黑屏加载期，
  *  等新场景加载完成（getScene().name 变化）再从中间向两边拉开。
+ *  r3 修复：hook 改为按组件实例判断，解决战斗返回后 ChooseView 重建导致
+ *  二次进战斗卷轴失效的问题（旧版 hooked 门闩锁死，只第一次有效）。
  *  r1 的毛病：靠轮询场景名变化触发，名字要等加载完才变——纸幕成了
  *  "马后炮"，玩家只看到黑屏一闪，没看到卷轴。
  *  触发：主菜单→选人（ChooseView 激活）、选人→战斗（ChangeScene 劫持）
@@ -12,8 +14,8 @@
   if (/[?&]trans=0/.test(location.search || '')) return;
   if (window.__transR1) return;
   var T = window.__transR1 = {
-    version: 'trans-r2', plays: 0, last: '', err: '',
-    report: function () { return { version: T.version, plays: T.plays, last: T.last, err: T.err, phase: phase }; },
+    version: 'trans-r3', plays: 0, hooks: 0, last: '', err: '',
+    report: function () { return { version: T.version, plays: T.plays, hooks: T.hooks, last: T.last, err: T.err, phase: phase }; },
     play: function () { T.plays++; closeNow(); setTimeout(openNow, 60); },
     // 调试：定格在合拢态，便于截图核对
     freeze: function () {
@@ -98,9 +100,13 @@
   }
 
   // ---- 劫持选人界面的 ChangeScene：点战斗 → 立刻合拢纸幕 ----
-  var hooked = false;
+  // 注意：不能用"一次性门闩"。战斗结束返回选人时 loadScene 会销毁重建
+  // ChooseView，ChangeScene 变成全新函数。若 hooked 已锁死就再也 hook 不上，
+  // 表现为"刷新后第一次进战斗有卷轴，之后都没有"。改为按组件实例判断：
+  // 只要遇到 ChangeScene 存在但没打过标记的实例就重新 hook。
+  var hookCount = 0;
   function tryHook() {
-    if (hooked || !window.cc || !cc.find) return;
+    if (!window.cc || !cc.find) return;
     var cv = cc.find('Canvas/ChooseView');
     if (!cv || !cv.getComponents) return;
     var comps = cv.getComponents(cc.Component) || [];
@@ -122,7 +128,7 @@
           }
         };
         c.__transWrapped = true;
-        hooked = true;
+        T.hooks = ++hookCount;
         break;
       }
     }
