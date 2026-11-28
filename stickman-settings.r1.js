@@ -8,8 +8,8 @@
    点击即时生效，不需要刷新：__mipSet() 会就地补 mipmap 或还原双线性。
    地址栏带 ?mip=0 时该开关锁死为关闭（调试用）。
 
-   图标复用顶栏的齿轮（icon_settings），运行时把纹理染成白色，与相邻的
-   Music/Credits/Privacy 三个白图标保持同一视觉。
+   图标原本是白色的，压在米白的图标块上几乎看不见。这里把四个图标统一染成
+   面板底色（深墨绿），白块上变成深色剪影，轮廓立刻清楚。
 
    配色：原版面板是亮蓝底 + 深蓝描边，与和纸米黄背景冲突。这里把底板换成
    深墨绿（#33413A）配近黑描边，文字改米色，与标题原有的深墨色系一致。
@@ -37,9 +37,14 @@
     return v;
   }
 
-  /* 把单色图标染成白色：先画进 canvas，再用 source-in 整体覆盖 */
-  var tinted = null;
-  function tint(sf) {
+  /* 把单色图标整体染色：先画进 canvas，再用 source-in 覆盖颜色 */
+  var tintCache = {};
+  function tint(sf, color) {
+    if (!sf) return null;
+    color = color || "#ffffff";
+    if (sf.__tintColor === color) return sf;          // 已经染过同一颜色
+    var key = (sf._uuid || sf.name || "sf") + "|" + color;
+    if (tintCache[key]) return tintCache[key];
     try {
       var tex = sf.getTexture();
       var img = tex && tex.getHtmlElementObj && tex.getHtmlElementObj();
@@ -50,12 +55,15 @@
       var g = cv.getContext("2d");
       g.drawImage(img, 0, 0);
       g.globalCompositeOperation = "source-in";
-      g.fillStyle = "#ffffff";
+      g.fillStyle = color;
       g.fillRect(0, 0, cv.width, cv.height);
       var nt = new cc.Texture2D();
       nt.initWithElement(cv);
       nt.handleLoadedTexture(true);
-      return new cc.SpriteFrame(nt, sf.getRect(), sf.isRotated(), sf.getOffset(), sf.getOriginalSize());
+      var nf = new cc.SpriteFrame(nt, sf.getRect(), sf.isRotated(), sf.getOffset(), sf.getOriginalSize());
+      nf.__tintColor = color;
+      tintCache[key] = nf;
+      return nf;
     } catch (e) {
       return null;
     }
@@ -87,7 +95,8 @@
     fill:  "#33413A",   // 面板底色
     edge:  "#1C2420",   // 描边
     title: "#F6EEDC",   // 标题
-    text:  "#EDE3C8"    // 正文与图标标签
+    text:  "#EDE3C8",   // 正文与图标标签
+    icon:  "#33413A"    // 图标：原来白色压在米白块上看不清，改用底色同色
   };
 
   function hx(h) {
@@ -176,9 +185,23 @@
     return true;
   }
 
+  /* 图标原本是白色，压在米白的图标块上几乎看不见。
+     统一染成面板底色，白块上就变成深色剪影，轮廓清楚。 */
+  function tintIcons(btns) {
+    ["musicBtn", "creditsBtn", "privacyBtn", "gfxBtn"].forEach(function (nm) {
+      var b = btns && btns.getChildByName(nm);
+      var ic = b && b.getChildByName("Icon");
+      var sp = ic && ic.getComponent(cc.Sprite);
+      if (sp && sp.spriteFrame) {
+        var nf = tint(sp.spriteFrame, THEME.icon);
+        if (nf) sp.spriteFrame = nf;
+      }
+    });
+  }
+
   function paint(btn, lbl, on) {
     var ic = btn && btn.getChildByName("Icon");
-    if (ic) ic.opacity = on ? 255 : 92;
+    if (ic) ic.opacity = on ? 255 : 140;
     if (lbl) lbl.node.opacity = on ? 255 : 128;
     // 右下角的指示灯：金=开，灰=关
     var dot = btn && btn.getChildByName("gfxDot");
@@ -195,9 +218,10 @@
       try { if (applyTheme(node)) node.__themeDone = 1; }
       catch (e) { LOG("配色失败", e && e.message); }
     }
-    if (node.__gfxDone) return;
     var btns = pop.getChildByName("buttons");
     if (!btns) return;
+    try { tintIcons(btns); } catch (e) { LOG("图标染色失败", e && e.message); }
+    if (node.__gfxDone) return;
     if (btns.getChildByName("gfxBtn")) { node.__gfxDone = 1; return; }
 
     var mb = btns.getChildByName("musicBtn");
@@ -242,15 +266,15 @@
     var btn = gBtn.getComponent(cc.Button);
     if (btn) btn.clickEvents = [];
 
-    // 5) 图标换成白色齿轮
+    // 5) 图标换成齿轮（取自顶栏，染成与其它三行一致的深色）
     var iconNode = gBtn.getChildByName("Icon");
     if (iconNode) {
       var sp = iconNode.getComponent(cc.Sprite);
       var src = cc.find("Canvas/MainView/TopPanel/Setting/Icon");
       var ssf = src && src.getComponent(cc.Sprite) && src.getComponent(cc.Sprite).spriteFrame;
       if (sp && ssf) {
-        if (!tinted) tinted = tint(ssf);
-        if (tinted) sp.spriteFrame = tinted;
+        var nf = tint(ssf, THEME.icon);
+        if (nf) sp.spriteFrame = nf;
       }
     }
 
@@ -276,6 +300,15 @@
     LOG("设置面板已加入 Graphics 项，当前", mipOn() ? "ON" : "OFF");
   }
 
+  /* 音乐图标被 AudioView 自己接管（musicSprite 会换 on/off 两张图），
+     start 和切歌都会把它换回白色，所以这两处之后都要补染一次。 */
+  function refreshIcons(av) {
+    var n = av && av.node;
+    var pop = n && n.getChildByName("Popup");
+    var btns = pop && pop.getChildByName("buttons");
+    if (btns) tintIcons(btns);
+  }
+
   function patch() {
     var M = req("AudioView");
     var P = M && M.default && M.default.prototype;
@@ -285,6 +318,16 @@
       P.onLoad = function () {
         if (oLoad) oLoad.call(this);
         try { inject(this); } catch (e) { LOG("注入失败", e && e.message); }
+      };
+      var oStart = P.start;
+      P.start = function () {
+        if (oStart) oStart.call(this);
+        try { refreshIcons(this); } catch (e) {}
+      };
+      var oMusic = P.OnMusicBtn;
+      P.OnMusicBtn = function () {
+        if (oMusic) oMusic.call(this);
+        try { refreshIcons(this); } catch (e) {}
       };
       P.__setR1 = true;
     }
