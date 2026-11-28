@@ -195,5 +195,11 @@
     var items=fieldStates().slice(0,4).map(function(s){ var it=ID[s]; return "<span class='hud2chip' data-d='"+esc(it?it.name+"："+(it.detail||it.short||""):"")+"'>"+(it?icon(it)+it.name+(it.short?" <span style='opacity:.75;font-size:11px'>"+it.short+"</span>":""):"道具"+s)+"</span>"; }).join("");
     if(items!==el.itemSig){ el.items.innerHTML=items; el.itemSig=items; }
   }
-  setInterval(function(){ try{ if(window.cc&&cc.director&&document.body)tick(); }catch(e){ try{ (window.__logs||(window.__logs=[])).push("[hud2] "+(e&&e.message)); }catch(_){} } },100);
+  var loop = function(){ try{ if(window.cc&&cc.director&&document.body)tick(); }catch(e){ try{ (window.__logs||(window.__logs=[])).push("[hud2] "+(e&&e.message)); }catch(_){} } };
+  // P4: 统一内核调度；内核未加载时退回原生定时器
+  if (window.__skinCore && window.__skinCore.add) {
+    window.__skinCore.add('hud', loop, 100);
+  } else {
+    setInterval(loop, 100);
+  }
 })();
