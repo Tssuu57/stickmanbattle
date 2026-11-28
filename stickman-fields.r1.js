@@ -250,8 +250,8 @@
       var h=lB.y-lA.y, pulse=0.5+0.5*Math.sin(T*4);
       g.clear();
       if(ins>1){
-        g.fillColor=cc.color(150,20,30,Math.round(110+30*pulse)); g.rect(lA.x,lA.y,lB.x-lA.x,h); g.rect(rA.x,rA.y,rB.x-rA.x,h); g.fill();
-        g.strokeColor=cc.color(255,90,60,Math.round(150+100*pulse)); g.lineWidth=7;
+        g.fillColor=cc.color(168,96,86,Math.round(110+30*pulse)); g.rect(lA.x,lA.y,lB.x-lA.x,h); g.rect(rA.x,rA.y,rB.x-rA.x,h); g.fill();
+        g.strokeColor=cc.color(192,90,74,Math.round(150+100*pulse)); g.lineWidth=7;
         g.moveTo(lB.x,lA.y); g.lineTo(lB.x,lB.y); g.moveTo(rA.x,rA.y); g.lineTo(rA.x,rB.y); g.stroke();
       }
       c.players.forEach(function(n,i){
@@ -664,8 +664,8 @@ __fields.register({
       var gn=g&&g.node;
       if(g){
         g.lineWidth=6;
-        g.strokeColor=cc.color(255,40,40,230);
-        g.fillColor=cc.color(255,40,40,70);
+        g.strokeColor=cc.color(192,90,74,222);
+        g.fillColor=cc.color(192,90,74,64);
         g.circle(0,0,RADIUS); g.fill(); g.stroke();
       }
       // 2. 预警结束：陨石落下（R.meteor 自己的 onHit 不可靠，这里不依赖它）
@@ -763,8 +763,8 @@ __fields.register({
       // 画（Canvas 坐标）
       var a=ctx.toCanvas(cc.v2(r.x,bottom)), b=ctx.toCanvas(cc.v2(r.x+r.width,top));
       g.clear();
-      g.fillColor=cc.color(255,90,20,215); g.rect(a.x,a.y,b.x-a.x,b.y-a.y); g.fill();
-      g.fillColor=cc.color(255,200,60,230); g.rect(a.x,b.y-10,b.x-a.x,10); g.fill();
+      g.fillColor=cc.color(198,116,72,208); g.rect(a.x,a.y,b.x-a.x,b.y-a.y); g.fill();
+      g.fillColor=cc.color(201,162,39,220); g.rect(a.x,b.y-10,b.x-a.x,10); g.fill();
       // 碰到：任一身体部件低于岩浆面
       ctx.players.forEach(function(n,i){
         if(ctx.isDead(n))return;
@@ -799,12 +799,12 @@ __fields.register({
       var h=lB.y-lA.y, pulse=0.5+0.5*Math.sin(T*3);
       g.clear();
       if(ins>1){
-        g.fillColor=cc.color(110,40,170,Math.round(95+25*pulse));
+        g.fillColor=cc.color(138,120,160,Math.round(95+25*pulse));
         g.rect(lA.x,lA.y,lB.x-lA.x,h); g.rect(rA.x,rA.y,rB.x-rA.x,h); g.fill();
-        g.fillColor=cc.color(90,220,90,Math.round(35+25*(1-pulse)));
+        g.fillColor=cc.color(110,150,124,Math.round(35+25*(1-pulse)));
         g.rect(lA.x,lA.y,(lB.x-lA.x)*0.6,h); g.rect(rB.x-(rB.x-rA.x)*0.6,rA.y,(rB.x-rA.x)*0.6,h); g.fill();
         // 边缘亮线
-        g.strokeColor=cc.color(150,255,90,Math.round(120+100*pulse)); g.lineWidth=6;
+        g.strokeColor=cc.color(118,158,130,Math.round(120+100*pulse)); g.lineWidth=6;
         g.moveTo(lB.x,lA.y); g.lineTo(lB.x,lB.y); g.moveTo(rA.x,rA.y); g.lineTo(rA.x,rB.y); g.stroke();
         g.strokeColor=cc.color(230,255,200,230); g.lineWidth=2;
         g.moveTo(lB.x,lA.y); g.lineTo(lB.x,lB.y); g.moveTo(rA.x,rA.y); g.lineTo(rA.x,rB.y); g.stroke();
@@ -1557,7 +1557,7 @@ __fields.register({
       g.clear();
       for(var l=1;l<=LV;l++){
         var b=buckets[l]; if(!b.length)continue;
-        g.fillColor=cc.color(4,6,16,Math.round(255*MAXA*l/LV));
+        g.fillColor=cc.color(46,58,52,Math.round(255*MAXA*l/LV));
         for(var q=0;q<b.length;q++){ var id=b[q], rr=(id/cols)|0, cc2=id-rr*cols; g.rect(o.x+cc2*s-0.5,o.y+rr*s-0.5,s+1,s+1); }
         g.fill();
       }
@@ -1823,7 +1823,7 @@ __fields.register({
     ctx.onUpdate(function(dt){
       var v=viewRect(), w=v.x1-v.x0, h=v.y1-v.y0;
       g.clear();
-      g.strokeColor=cc.color(130,255,90,150); g.lineWidth=2;
+      g.strokeColor=cc.color(110,150,124,150); g.lineWidth=2;
       for(var i=0;i<N;i++){
         var d=drops[i];
         d.v-=d.s*0.9*dt; d.u-=0.03*dt;
@@ -1832,7 +1832,7 @@ __fields.register({
         g.moveTo(p.x+7,p.y+26); g.lineTo(p.x,p.y);
       }
       g.stroke();
-      g.fillColor=cc.color(150,255,100,200);
+      g.fillColor=cc.color(118,158,130,200);
       ctx.players.forEach(function(n,k){
         if(!wet[k]||ctx.isDead(n))return;
         var c=ctx.canvasPt(n); if(!c)return;
@@ -1960,7 +1960,7 @@ __fields.register({
         var a0=T*4+i*2.094;
         g.arc(c.x,c.y,120,a0,a0+1.1,true); g.stroke();
       }
-      g.fillColor=cc.color(20,10,40,Math.round(230*alpha));
+      g.fillColor=cc.color(46,58,52,Math.round(230*alpha));
       g.circle(c.x,c.y,38+6*Math.sin(T*6)); g.fill();
     }
     ctx.onUpdate(function(dt){
@@ -2145,7 +2145,7 @@ __fields.register({
           g.moveTo(base.x+sw-w,yy); g.lineTo(base.x+sw+w,yy+H/26*Math.cos(t*9+f*7)); g.stroke();
         }
         if(!active){
-          g.strokeColor=cc.color(255,60,60,Math.floor(150+100*Math.sin(t*12)));
+          g.strokeColor=cc.color(192,90,74,Math.floor(150+100*Math.sin(t*12)));
           g.lineWidth=6; g.circle(base.x,base.y,170); g.stroke();
         }
       }
@@ -2300,8 +2300,8 @@ __fields.register({
             var on=Math.sin(e*28)>-0.2;
             tx=cc.v2(bp.x,bp.y);
             g.lineWidth=8;
-            g.strokeColor=cc.color(255,230,40,on?255:100);
-            g.fillColor=cc.color(255,230,40,on?90:30);
+            g.strokeColor=cc.color(201,162,39,on?255:100);
+            g.fillColor=cc.color(201,162,39,on?90:30);
             var rad=160*canvasScale();
             g.circle(cp.x,cp.y,rad); g.fill(); g.stroke();
             if(lab&&lab.isValid)lab.setPosition(cp.x,cp.y+rad+60);
@@ -2316,7 +2316,7 @@ __fields.register({
         var k=1-(t-boltT)/FADE;
         if(k<=0){ bolt=null; }
         else {
-          gb.lineWidth=34; gb.strokeColor=cc.color(255,240,120,Math.floor(120*k));
+          gb.lineWidth=34; gb.strokeColor=cc.color(212,178,72,Math.floor(120*k));
           gb.moveTo(bolt[0][0],bolt[0][1]);
           for(var i=1;i<bolt.length;i++)gb.lineTo(bolt[i][0],bolt[i][1]);
           gb.stroke();
@@ -2368,13 +2368,13 @@ __fields.register({
         var f=flames[j], age=(t-f.t)/LIFE, a=1-age, c=ctx.toCanvas(cc.v2(f.x,f.y));
         var fl=1+0.18*Math.sin(t*25+f.ph), r=RAD*s*fl*(0.7+0.3*a);
         if(f.o===0){
-          g.fillColor=cc.color(40,120,255,Math.floor(150*a)); g.circle(c.x,c.y,r); g.fill();
-          g.fillColor=cc.color(120,220,255,Math.floor(210*a)); g.circle(c.x,c.y+r*0.15,r*0.6); g.fill();
+          g.fillColor=cc.color(76,140,170,Math.floor(150*a)); g.circle(c.x,c.y,r); g.fill();
+          g.fillColor=cc.color(120,170,180,Math.floor(210*a)); g.circle(c.x,c.y+r*0.15,r*0.6); g.fill();
           g.fillColor=cc.color(255,255,255,Math.floor(230*a)); g.circle(c.x,c.y+r*0.25,r*0.28); g.fill();
         }else{
-          g.fillColor=cc.color(255,60,20,Math.floor(150*a)); g.circle(c.x,c.y,r); g.fill();
-          g.fillColor=cc.color(255,170,30,Math.floor(210*a)); g.circle(c.x,c.y+r*0.15,r*0.6); g.fill();
-          g.fillColor=cc.color(255,250,170,Math.floor(230*a)); g.circle(c.x,c.y+r*0.25,r*0.28); g.fill();
+          g.fillColor=cc.color(198,116,72,Math.floor(150*a)); g.circle(c.x,c.y,r); g.fill();
+          g.fillColor=cc.color(198,140,64,Math.floor(210*a)); g.circle(c.x,c.y+r*0.15,r*0.6); g.fill();
+          g.fillColor=cc.color(232,224,180,Math.floor(230*a)); g.circle(c.x,c.y+r*0.25,r*0.28); g.fill();
         }
       }
       for(i=0;i<2;i++){
@@ -2513,10 +2513,10 @@ __fields.register({
           if(g&&g.isValid&&p){
             g.clear();
             var r=130+Math.sin(t*10)*14;
-            g.fillColor=cc.color(255,40,30,50); g.circle(p.x,p.y,r); g.fill();
-            g.strokeColor=cc.color(255,60,40,230); g.lineWidth=12;
+            g.fillColor=cc.color(192,90,74,48); g.circle(p.x,p.y,r); g.fill();
+            g.strokeColor=cc.color(192,90,74,222); g.lineWidth=12;
             g.circle(p.x,p.y,r); g.stroke();
-            g.strokeColor=cc.color(255,200,80,200); g.lineWidth=5;
+            g.strokeColor=cc.color(201,162,39,195); g.lineWidth=5;
             g.circle(p.x,p.y,r-16); g.stroke();
           }
           if(ctx.now()<boostEnd[i]){
@@ -2710,12 +2710,12 @@ __fields.register({
       var al=Math.floor(255*fade), w=TH*s;
       g.clear();
       g.lineCap=cc.Graphics.LineCap.ROUND;
-      g.strokeColor=cc.color(255,200,60,al); g.lineWidth=w+14*s;
+      g.strokeColor=cc.color(201,162,39,al); g.lineWidth=w+14*s;
       g.moveTo(A.x,A.y); g.lineTo(B.x,B.y); g.stroke();
-      g.strokeColor=cc.color(40,30,50,al); g.lineWidth=w;
+      g.strokeColor=cc.color(46,58,52,al); g.lineWidth=w;
       g.moveTo(A.x,A.y); g.lineTo(B.x,B.y); g.stroke();
-      g.fillColor=cc.color(255,200,60,al); g.circle(C.x,C.y,36*s); g.fill();
-      g.fillColor=cc.color(60,40,60,al); g.circle(C.x,C.y,22*s); g.fill();
+      g.fillColor=cc.color(201,162,39,al); g.circle(C.x,C.y,36*s); g.fill();
+      g.fillColor=cc.color(66,78,70,al); g.circle(C.x,C.y,22*s); g.fill();
       if(!live)return;
       var lx=bx-ax, ly=by-ay, L2=lx*lx+ly*ly;
       for(var i=0;i<2;i++){
@@ -2796,8 +2796,8 @@ __fields.register({
       anchors.forEach(function(a,i){
         if(!a)return;
         var c=ctx.toCanvas(a), R=90, pulse=0.5+0.5*Math.sin(T*8);
-        g.fillColor=cc.color(60,220,255,Math.round(50+40*pulse)); g.circle(c.x,c.y,R); g.fill();
-        g.strokeColor=cc.color(120,255,255,255); g.lineWidth=8; g.circle(c.x,c.y,R); g.stroke();
+        g.fillColor=cc.color(76,154,147,Math.round(50+40*pulse)); g.circle(c.x,c.y,R); g.fill();
+        g.strokeColor=cc.color(76,154,147,230); g.lineWidth=8; g.circle(c.x,c.y,R); g.stroke();
         g.moveTo(c.x-R*0.7,c.y); g.lineTo(c.x+R*0.7,c.y); g.moveTo(c.x,c.y-R*0.7); g.lineTo(c.x,c.y+R*0.7); g.stroke();
         // 收缩的倒计时圈
         g.strokeColor=cc.color(255,255,255,200); g.lineWidth=5; g.circle(c.x,c.y,R+20+left*30); g.stroke();
@@ -2867,14 +2867,14 @@ __fields.register({
         if(age>=FUSE){ explode(b); continue; }
         var c=ctx.toCanvas(cc.v2(b.x,b.y)), k=age/FUSE;
         g.lineWidth=5*s;
-        g.strokeColor=cc.color(255,60,30,Math.floor(120+100*k));
+        g.strokeColor=cc.color(192,90,74,Math.floor(120+100*k));
         g.circle(c.x,c.y,BR*s); g.stroke();
-        g.strokeColor=cc.color(255,220,80,230); g.lineWidth=7*s;
+        g.strokeColor=cc.color(201,162,39,222); g.lineWidth=7*s;
         g.circle(c.x,c.y,BR*s*(1-k)); g.stroke();
-        g.fillColor=cc.color(15,15,20,255); g.circle(c.x,c.y,45*s); g.fill();
-        g.fillColor=cc.color(70,70,85,255); g.circle(c.x-14*s,c.y+14*s,12*s); g.fill();
+        g.fillColor=cc.color(46,58,52,255); g.circle(c.x,c.y,45*s); g.fill();
+        g.fillColor=cc.color(92,104,98,255); g.circle(c.x-14*s,c.y+14*s,12*s); g.fill();
         var blink=Math.floor(age*(6+10*k))%2===0;
-        g.fillColor=blink?cc.color(255,40,40,255):cc.color(120,0,0,255);
+        g.fillColor=blink?cc.color(192,90,74,255):cc.color(150,70,60,255);
         g.circle(c.x,c.y+50*s,14*s); g.fill();
       }
       bombs=bombs.filter(function(b){return !b.dead;});

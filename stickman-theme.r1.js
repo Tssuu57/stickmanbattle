@@ -118,7 +118,11 @@
       if (eq(c, P1_FROM)) { n.color = new cc.Color(P1_TO[0], P1_TO[1], P1_TO[2]); T.recolored++; }
       else if (eq(c, P2_FROM)) { n.color = new cc.Color(P2_TO[0], P2_TO[1], P2_TO[2]); T.recolored++; }
       else for (var i = 0; i < SOLID.length; i++) {
-        if (eq(c, SOLID[i][0])) { var t = SOLID[i][1]; n.color = new cc.Color(t[0], t[1], t[2]); break; }
+        if (eq(c, SOLID[i][0])) {
+          var t = SOLID[i][1]; n.color = new cc.Color(t[0], t[1], t[2]);
+          if (i === 3 && n.opacity > 60) n.opacity = 60;  // 荧光绿装饰降透明度
+          T.recolored++; break;
+        }
       }
       // 浅底上的白字改墨绿
       if (c.r === 255 && c.g === 255 && c.b === 255 && n.getComponent(cc.Label)) {
