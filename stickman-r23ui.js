@@ -53,12 +53,14 @@
     if(on&&!m){ m=new cc.Node("r23on"); m.parent=tile; var g=m.addComponent(cc.Graphics); g.lineWidth=8; g.strokeColor=new cc.Color(255,207,74); g.roundRect(-88,-88,176,176,16); g.stroke(); }
     if(m)m.active=!!on;
   }
-  function label(parent,txt,y,w,h,size,col,bold){
+  function label(parent,txt,y,w,h,size,col,bold,plain){
     var n=new cc.Node("t"); n.parent=parent; n.setPosition(0,y); n.color=col||cc.Color.WHITE;
-    var l=n.addComponent(cc.Label); l.overflow=cc.Label.Overflow.SHRINK; l.enableWrapText=true; n.setContentSize(w,h);
-    l.string=txt; l.fontSize=size; l.lineHeight=Math.round(size*1.15); l.horizontalAlign=cc.Label.HorizontalAlign.CENTER; l.verticalAlign=cc.Label.VerticalAlign.CENTER;
+    var l=n.addComponent(cc.Label);
+    // plain：简介类文字用固定字号 + 深墨色，不加描边（SHRINK 会把多行中文越缩越窄，糊成一团）
+    l.overflow=plain?cc.Label.Overflow.CLAMP:cc.Label.Overflow.SHRINK; l.enableWrapText=true; n.setContentSize(w,h);
+    l.string=txt; l.fontSize=size; l.lineHeight=Math.round(size*(plain?1.34:1.15)); l.horizontalAlign=cc.Label.HorizontalAlign.CENTER; l.verticalAlign=cc.Label.VerticalAlign.CENTER;
     if(bold)l.enableBold=true;
-    var o=n.addComponent(cc.LabelOutline); o.color=new cc.Color(18,52,98); o.width=bold?3:2;
+    if(!plain){ var o=n.addComponent(cc.LabelOutline); o.color=new cc.Color(18,52,98); o.width=bold?3:2; }
     return n;
   }
   function tile(name,fn){
@@ -105,7 +107,7 @@
       });
       t.parent=ct;
       if(it.id==="random"){ label(t,"?",10,160,110,90,cc.Color.WHITE,true); label(t,"随机",-62,160,40,28,new cc.Color(255,232,150),true); }
-      else{ label(t,it.name,48,164,50,32,new cc.Color(255,232,150),true); label(t,it.desc||"",-28,164,100,21,cc.Color.WHITE,false); }
+      else{ label(t,it.name,48,164,50,32,new cc.Color(255,232,150),true); label(t,it.desc||"",-32,164,104,18,new cc.Color(0x2E,0x3A,0x34),false,true); }
       mark(t,it.id===cur);
     });
     var lay=ct.getComponent(cc.Layout); if(lay)lay.updateLayout();
