@@ -129,6 +129,13 @@
     T.ticked++;
   }
   domCss();
-  setInterval(function () { tick(); markDom(); }, 100);
-  setTimeout(function () { tick(); markDom(); }, 500);
+  var loop = function () { tick(); markDom(); };
+  // P4: 统一内核调度；内核未加载时退回原生定时器
+  if (window.__skinCore && window.__skinCore.add) {
+    window.__skinCore.add('press', loop, 100);
+    window.__skinCore.once(loop, 500);
+  } else {
+    setInterval(loop, 100);
+    setTimeout(loop, 500);
+  }
 })();
