@@ -133,7 +133,13 @@
   window.__openTujian=openTujian; window.__closeTujian=closeTujian;
   document.addEventListener("keydown",function(e){ if(e.key==="Escape")closeTujian(); });
 
-  setInterval(function(){
+  var loop = function(){
     try{ if(typeof cc==="undefined"||!cc.director||!cc.director.getScene())return; tickChoose(); }catch(e){ if(!window.__r23uiErr){ window.__r23uiErr=1; console.log("[r23ui]",e&&e.message); } }
-  },250);
+  };
+  // P4: 统一内核调度；内核未加载时退回原生定时器
+  if (window.__skinCore && window.__skinCore.add) {
+    window.__skinCore.add('r23ui', loop, 250);
+  } else {
+    setInterval(loop, 250);
+  }
 })();
