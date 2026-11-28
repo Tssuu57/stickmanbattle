@@ -147,7 +147,7 @@
     document.head.appendChild(st);
   }
   css();
-  setInterval(css, 800);
+  var cssLoop = function () { try { css(); } catch (e) {} };
 
   function tick() {
     if (!window.cc || !cc.director) return;
@@ -155,6 +155,14 @@
     if (!sc) return;
     try { walk(sc); } catch (e) {}
   }
-  setInterval(tick, 150);
-  setTimeout(tick, 900);
+  // P4: 统一内核调度；内核未加载时退回原生定时器
+  if (window.__skinCore && window.__skinCore.add) {
+    window.__skinCore.add('theme:css', cssLoop, 800);
+    window.__skinCore.add('theme', tick, 150);
+    window.__skinCore.once(tick, 900);
+  } else {
+    setInterval(cssLoop, 800);
+    setInterval(tick, 150);
+    setTimeout(tick, 900);
+  }
 })();
