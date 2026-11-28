@@ -226,7 +226,7 @@
     }
   }
 
-  setInterval(function () { findPickBtn(); domScan(); }, 700);
+  var domLoop = function () { findPickBtn(); domScan(); };
 
   function tick() {
     if (!window.cc || !cc.director) return;
@@ -234,6 +234,14 @@
     if (!sc) return;
     try { walk(sc); } catch (e) { T.err = "walk:" + (e && e.message); }
   }
-  setInterval(tick, 160);
-  setTimeout(tick, 700);
+  // P4: 统一内核调度；内核未加载时退回原生定时器
+  if (window.__skinCore && window.__skinCore.add) {
+    window.__skinCore.add('sub:dom', domLoop, 700);
+    window.__skinCore.add('sub', tick, 160);
+    window.__skinCore.once(tick, 700);
+  } else {
+    setInterval(domLoop, 700);
+    setInterval(tick, 160);
+    setTimeout(tick, 700);
+  }
 })();
